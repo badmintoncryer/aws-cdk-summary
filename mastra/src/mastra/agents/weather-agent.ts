@@ -21,7 +21,7 @@ export const weatherAgent = new Agent({
 
       Use the weatherTool to fetch current weather data.
 `,
-  model: bedrock("anthropic.claude-haiku-4-5-20251001-v1:0"),
+  model: bedrock("us.anthropic.claude-haiku-4-5-20251001-v1:0"),
   tools: { weatherTool },
   scorers: {
     toolCallAppropriateness: {
