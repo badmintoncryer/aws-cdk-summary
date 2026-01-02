@@ -1,4 +1,5 @@
 import * as cdk from "aws-cdk-lib/core";
+import * as iam from "aws-cdk-lib/aws-iam";
 import * as lambda from "aws-cdk-lib/aws-lambda";
 import * as lambdaNodejs from "aws-cdk-lib/aws-lambda-nodejs";
 import * as scheduler from "aws-cdk-lib/aws-scheduler";
@@ -80,6 +81,15 @@ export class AgentScheduler extends Construct {
 
     // Lambda に AgentCore 呼び出し権限を付与
     props.agentRuntime.grantInvokeRuntime(this.invokerLambda);
+
+    // Workaround: L2のgrantInvoke()がruntime-endpoint/*を含まないため手動で追加
+    this.invokerLambda.addToRolePolicy(
+      new iam.PolicyStatement({
+        effect: iam.Effect.ALLOW,
+        actions: ["bedrock-agentcore:InvokeAgentRuntime"],
+        resources: [`${props.agentRuntime.agentRuntimeArn}/*`],
+      })
+    );
 
     // EventBridge Schedule の作成
     this.schedule = new scheduler.Schedule(this, "Schedule", {
