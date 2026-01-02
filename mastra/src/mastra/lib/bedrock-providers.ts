@@ -3,6 +3,7 @@ import { fromNodeProviderChain } from '@aws-sdk/credential-providers';
 
 const isLocal = process.env.IS_LOCAL === 'TRUE';
 
+export const model = "us.anthropic.claude-haiku-4-5-20251001-v1:0";
 export const bedrock = createAmazonBedrock(
   isLocal
     ? {
