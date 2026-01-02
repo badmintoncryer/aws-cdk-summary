@@ -1,9 +1,11 @@
 import * as cdk from "aws-cdk-lib/core";
 import * as s3 from "aws-cdk-lib/aws-s3";
 import * as iam from "aws-cdk-lib/aws-iam";
+import * as scheduler from "aws-cdk-lib/aws-scheduler";
 import { Construct } from "constructs";
 import * as path from "node:path";
 import { MastraAgentRuntime } from "./constructs/mastra-agent-runtime";
+import { AgentScheduler } from "./constructs/agent-scheduler";
 
 export class CdkSummaryStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
@@ -24,7 +26,7 @@ export class CdkSummaryStack extends cdk.Stack {
     });
 
     // Mastra CDK Summary Agent Runtime
-    new MastraAgentRuntime(this, "CdkSummaryAgent", {
+    const agentRuntime = new MastraAgentRuntime(this, "CdkSummaryAgent", {
       runtimeName: "CdkSummaryAgentRuntime",
       dockerContext: path.join(__dirname, "../../mastra"),
       dockerfilePath: "mastra-app/Dockerfile",
@@ -34,6 +36,18 @@ export class CdkSummaryStack extends cdk.Stack {
       runtimeEnvironmentVariables: {
         REPORT_BUCKET_NAME: reportBucket.bucketName,
       },
+    });
+
+    // 日次スケジュール（毎日JST 9:00）
+    new AgentScheduler(this, "DailyAgentScheduler", {
+      agentRuntime: agentRuntime.runtime,
+      prompt:
+        "過去24時間のaws/aws-cdkリポジトリのPRを分析してレポートを作成し、S3に保存してください",
+      schedule: scheduler.ScheduleExpression.cron({
+        minute: "0",
+        hour: "9",
+        timeZone: cdk.TimeZone.ASIA_TOKYO,
+      }),
     });
 
     // バケット名を出力
