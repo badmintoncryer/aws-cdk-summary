@@ -44,7 +44,7 @@ Markdownで構造化されたレポートを生成してください。
   },
   memory: new Memory({
     storage: new LibSQLStore({
-      url: "file:../mastra.db",
+      url: "file:./mastra.db",
     }),
   }),
 });

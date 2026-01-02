@@ -37,7 +37,7 @@ app.post('/invocations', async (req: Request, res: Response) => {
         console.log("Processing input:", inputText);
 
         // Mastraエージェントを実行
-        const agent = mastra.getAgent("weatherAgent");
+        const agent = mastra.getAgent("cdkReportAgent");
         const result = await agent.generate(inputText);
 
         console.log("Agent response:", result.text);

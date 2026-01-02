@@ -8,8 +8,8 @@ export class CdkSummaryStack extends cdk.Stack {
     super(scope, id, props);
 
     // Mastra Weather Agent Runtime
-    new MastraAgentRuntime(this, "WeatherAgent", {
-      runtimeName: "CdkSummarizeAgentRuntime",
+    new MastraAgentRuntime(this, "CdkSummaryAgent", {
+      runtimeName: "CdkSummaryAgentRuntime",
       dockerContext: path.join(__dirname, "../../mastra"),
       dockerfilePath: "mastra-app/Dockerfile",
       description: "CDK daily summary agent",
