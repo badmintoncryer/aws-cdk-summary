@@ -67,6 +67,13 @@ export interface MastraAgentRuntimeProps {
    * @default false
    */
   enableMarketplaceAccess?: boolean;
+
+  /**
+   * Runtime 環境変数
+   *
+   * @default - no environment variables
+   */
+  runtimeEnvironmentVariables?: { [key: string]: string };
 }
 
 /**
@@ -115,6 +122,7 @@ export class MastraAgentRuntime extends Construct {
       runtimeName: props.runtimeName,
       agentRuntimeArtifact: agentRuntimeArtifact,
       description: props.description,
+      environmentVariables: props.runtimeEnvironmentVariables,
     });
 
     // ARN を取得
