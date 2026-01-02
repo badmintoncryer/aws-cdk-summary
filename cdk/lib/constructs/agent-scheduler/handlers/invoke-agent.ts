@@ -25,18 +25,20 @@ export const handler = async () => {
     payload,
     contentType: "application/json",
     accept: "application/json",
-    runtimeSessionId: `daily-${new Date().toISOString().split("T")[0]}`,
+    runtimeSessionId: `daily-report-${new Date().toISOString()}`,
   });
 
   const response = await client.send(command);
 
-  console.log("Agent invocation completed:", JSON.stringify(response));
+  console.log("Agent invocation completed:", {
+    $metadata: response.$metadata,
+  });
 
   return {
     statusCode: 200,
     body: JSON.stringify({
       message: "Agent invocation completed",
-      response,
+      requestId: response.$metadata?.requestId,
     }),
   };
 };
