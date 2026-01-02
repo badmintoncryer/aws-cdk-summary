@@ -30,7 +30,7 @@ export interface AgentSchedulerProps {
 
   /**
    * Lambda 関数のタイムアウト
-   * @default Duration.minutes(5)
+   * @default Duration.minutes(15)
    */
   timeout?: cdk.Duration;
 }
@@ -72,7 +72,7 @@ export class AgentScheduler extends Construct {
     this.invokerLambda = new lambdaNodejs.NodejsFunction(this, "Invoker", {
       entry: path.join(__dirname, "handlers/invoke-agent.ts"),
       runtime: lambda.Runtime.NODEJS_22_X,
-      timeout: props.timeout ?? cdk.Duration.minutes(5),
+      timeout: props.timeout ?? cdk.Duration.minutes(15),
       environment: {
         AGENT_RUNTIME_ARN: props.agentRuntime.agentRuntimeArn,
         AGENT_PROMPT: props.prompt,
