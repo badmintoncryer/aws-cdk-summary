@@ -6,6 +6,7 @@ import { Construct } from "constructs";
 import * as path from "node:path";
 import { MastraAgentRuntime } from "./constructs/mastra-agent-runtime";
 import { AgentScheduler } from "./constructs/agent-scheduler";
+import { ReportFrontend } from "./constructs/report-frontend";
 
 export class CdkSummaryStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
@@ -54,6 +55,16 @@ export class CdkSummaryStack extends cdk.Stack {
     new cdk.CfnOutput(this, "ReportBucketName", {
       value: reportBucket.bucketName,
       description: "S3 bucket for CDK reports",
+    });
+
+    // レポート閲覧フロントエンド
+    const frontend = new ReportFrontend(this, "ReportFrontend", {
+      reportBucket,
+    });
+
+    new cdk.CfnOutput(this, "FrontendUrl", {
+      value: `https://${frontend.distribution.distributionDomainName}`,
+      description: "CDK Report Frontend URL",
     });
   }
 }
