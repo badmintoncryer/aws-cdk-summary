@@ -197,12 +197,17 @@ export default async function Home({
 
                       {/* PR Meta */}
                       <div className="flex items-center gap-3 text-sm text-gray-500 mb-4">
-                        <span className="flex items-center gap-1">
+                        <a
+                          href={`https://github.com/${pr.author}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex items-center gap-1 hover:text-blue-600 transition-colors"
+                        >
                           <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                             <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
                           </svg>
-                          {pr.author}
-                        </span>
+                          @{pr.author}
+                        </a>
                         <span className="text-gray-300">|</span>
                         <span className="flex items-center gap-1">
                           <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">

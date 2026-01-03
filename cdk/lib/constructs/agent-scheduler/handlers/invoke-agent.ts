@@ -3,7 +3,9 @@ import {
   InvokeAgentRuntimeCommand,
 } from "@aws-sdk/client-bedrock-agentcore";
 
-const client = new BedrockAgentCoreClient({});
+const client = new BedrockAgentCoreClient({
+  maxAttempts: 1,
+});
 
 export const handler = async () => {
   const agentRuntimeArn = process.env.AGENT_RUNTIME_ARN;
