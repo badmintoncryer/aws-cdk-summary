@@ -2,6 +2,10 @@
 
 AWS CDK リポジトリのPull Requestを毎日分析し、サマリーレポートを自動生成するシステムです
 
+## URL
+
+https://d2t5fomzexey4a.cloudfront.net/
+
 ## アーキテクチャ
 
 ![Architecture](./images/cdk-summary.png)
