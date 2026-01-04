@@ -48,7 +48,7 @@ export const cdkReportAgent = new Agent({
 ## ツールの使用
 1. 'fetch-recent-merged-prs'ツールでPR一覧を取得
 2. 必要に応じて'fetch-pr-details'ツールで詳細情報を取得
-3. レポート作成後、'save-report-to-s3'ツールでS3に保存
+3. レポート作成後、'save-report-to-s3'ツールでS3に保存。このとき、ファイル名は'cdk-report-YYYY-MM-DD.json'形式とする
 4. デフォルトではaws/aws-cdkリポジトリの過去24時間のPRを対象にする
 
 ## 言語
