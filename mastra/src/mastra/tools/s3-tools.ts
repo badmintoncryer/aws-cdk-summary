@@ -55,8 +55,8 @@ export const saveReportToS3 = createTool({
     report: cdkReportSchema.describe("保存するレポートデータ"),
     filename: z
       .string()
-      .describe("ファイル名（.json拡張子なしでも可、自動付与される）")
-      .default(() => `cdk-report-${new Date().toISOString().split("T")[0]}`),
+      .describe("ファイル名（.json拡張子なしでも可、自動付与される）。省略時はレポート対象期間の終了日を使用")
+      .optional(),
     prefix: z
       .string()
       .describe("S3キーのプレフィックス（フォルダパス）")
@@ -80,10 +80,13 @@ export const saveReportToS3 = createTool({
         );
       }
 
+      // ファイル名の決定（省略時はレポート対象期間の終了日を使用）
+      const baseFilename = filename || `cdk-report-${report.period.to.split("T")[0]}`;
+
       // ファイル名の正規化（.json拡張子の確保）
-      const normalizedFilename = filename.endsWith(".json")
-        ? filename
-        : `${filename}.json`;
+      const normalizedFilename = baseFilename.endsWith(".json")
+        ? baseFilename
+        : `${baseFilename}.json`;
 
       // タイムスタンプ付きのオブジェクトキーを生成
       const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
