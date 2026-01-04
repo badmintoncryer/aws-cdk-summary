@@ -4,6 +4,7 @@ import {
   GetObjectCommand,
 } from "@aws-sdk/client-s3";
 import { DateSelector } from "./date-selector";
+import { ThemeToggle } from "./theme-toggle";
 
 interface PullRequest {
   number: number;
@@ -86,18 +87,73 @@ async function getReport(key: string): Promise<CdkReport | null> {
   }
 }
 
-const categoryStyles: Record<string, { bg: string; text: string; border: string }> = {
-  feat: { bg: "bg-emerald-100", text: "text-emerald-700", border: "border-l-emerald-500" },
-  fix: { bg: "bg-red-100", text: "text-red-700", border: "border-l-red-500" },
-  docs: { bg: "bg-slate-100", text: "text-slate-700", border: "border-l-slate-500" },
-  chore: { bg: "bg-cyan-100", text: "text-cyan-700", border: "border-l-cyan-500" },
-  refactor: { bg: "bg-orange-100", text: "text-orange-700", border: "border-l-orange-500" },
-  test: { bg: "bg-purple-100", text: "text-purple-700", border: "border-l-purple-500" },
-  ci: { bg: "bg-teal-100", text: "text-teal-700", border: "border-l-teal-500" },
+const categoryStyles: Record<string, {
+  bg: string;
+  darkBg: string;
+  text: string;
+  darkText: string;
+  border: string;
+}> = {
+  feat: {
+    bg: "bg-emerald-100",
+    darkBg: "dark:bg-emerald-900/30",
+    text: "text-emerald-700",
+    darkText: "dark:text-emerald-300",
+    border: "border-l-emerald-500",
+  },
+  fix: {
+    bg: "bg-red-100",
+    darkBg: "dark:bg-red-900/30",
+    text: "text-red-700",
+    darkText: "dark:text-red-300",
+    border: "border-l-red-500",
+  },
+  docs: {
+    bg: "bg-slate-100",
+    darkBg: "dark:bg-slate-800/50",
+    text: "text-slate-700",
+    darkText: "dark:text-slate-300",
+    border: "border-l-slate-500",
+  },
+  chore: {
+    bg: "bg-cyan-100",
+    darkBg: "dark:bg-cyan-900/30",
+    text: "text-cyan-700",
+    darkText: "dark:text-cyan-300",
+    border: "border-l-cyan-500",
+  },
+  refactor: {
+    bg: "bg-orange-100",
+    darkBg: "dark:bg-orange-900/30",
+    text: "text-orange-700",
+    darkText: "dark:text-orange-300",
+    border: "border-l-orange-500",
+  },
+  test: {
+    bg: "bg-purple-100",
+    darkBg: "dark:bg-purple-900/30",
+    text: "text-purple-700",
+    darkText: "dark:text-purple-300",
+    border: "border-l-purple-500",
+  },
+  ci: {
+    bg: "bg-teal-100",
+    darkBg: "dark:bg-teal-900/30",
+    text: "text-teal-700",
+    darkText: "dark:text-teal-300",
+    border: "border-l-teal-500",
+  },
 };
 
 function getCategoryStyle(category: string) {
-  return categoryStyles[category] || { bg: "bg-gray-100", text: "text-gray-700", border: "border-l-gray-500" };
+  const defaultStyle = {
+    bg: "bg-gray-100",
+    darkBg: "dark:bg-gray-800",
+    text: "text-gray-700",
+    darkText: "dark:text-gray-300",
+    border: "border-l-gray-500",
+  };
+  return categoryStyles[category] || defaultStyle;
 }
 
 export default async function Home({
@@ -121,16 +177,19 @@ export default async function Home({
   return (
     <div className="min-h-screen">
       {/* Header */}
-      <header className="bg-white border-b border-gray-200 sticky top-0 z-10">
+      <header className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 sticky top-0 z-10">
         <div className="max-w-6xl mx-auto px-6 py-4 flex justify-between items-center">
           <div>
-            <h1 className="text-xl font-bold text-gray-900">AWS CDK Daily Summary</h1>
-            <p className="text-sm text-gray-500 mt-0.5">Pull Request Analysis Report</p>
+            <h1 className="text-xl font-bold text-gray-900 dark:text-white">AWS CDK Daily Summary</h1>
+            <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">Pull Request Analysis Report</p>
           </div>
-          <DateSelector
-            dates={reportList.map((r) => r.date)}
-            selectedDate={selectedDate || ""}
-          />
+          <div className="flex items-center gap-4">
+            <DateSelector
+              dates={reportList.map((r) => r.date)}
+              selectedDate={selectedDate || ""}
+            />
+            <ThemeToggle />
+          </div>
         </div>
       </header>
 
@@ -139,7 +198,7 @@ export default async function Home({
           <>
             {/* Summary Cards */}
             <section className="mb-10">
-              <h2 className="text-lg font-semibold text-gray-800 mb-4">Overview</h2>
+              <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-4">Overview</h2>
               <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
                 {/* Total PRs Card */}
                 <div className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl p-5 text-white shadow-lg col-span-2">
@@ -153,10 +212,10 @@ export default async function Home({
                   return (
                     <div
                       key={category}
-                      className={`${style.bg} rounded-xl p-4 border-l-4 ${style.border}`}
+                      className={`${style.bg} ${style.darkBg} rounded-xl p-4 border-l-4 ${style.border}`}
                     >
-                      <div className={`text-2xl font-bold ${style.text}`}>{count}</div>
-                      <div className="text-gray-600 mt-1 text-sm capitalize">{category}</div>
+                      <div className={`text-2xl font-bold ${style.text} ${style.darkText}`}>{count}</div>
+                      <div className="text-gray-600 dark:text-gray-400 mt-1 text-sm capitalize">{category}</div>
                     </div>
                   );
                 })}
@@ -165,14 +224,14 @@ export default async function Home({
 
             {/* Pull Requests List */}
             <section>
-              <h2 className="text-lg font-semibold text-gray-800 mb-4">Pull Requests</h2>
+              <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-4">Pull Requests</h2>
               <div className="space-y-4">
                 {selectedReport.pullRequests.map((pr) => {
                   const style = getCategoryStyle(pr.category);
                   return (
                     <article
                       key={pr.number}
-                      className={`bg-white rounded-xl shadow-sm border border-gray-100 p-6
+                      className={`bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6
                                   border-l-4 ${style.border} hover:shadow-md transition-shadow`}
                     >
                       {/* PR Header */}
@@ -181,14 +240,14 @@ export default async function Home({
                           href={pr.url}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="text-base font-semibold text-gray-900 hover:text-blue-600
+                          className="text-base font-semibold text-gray-900 dark:text-white hover:text-blue-600 dark:hover:text-blue-400
                                      transition-colors line-clamp-2"
                         >
-                          <span className="text-gray-400 font-normal">#{pr.number}</span>{" "}
+                          <span className="text-gray-400 dark:text-gray-500 font-normal">#{pr.number}</span>{" "}
                           {pr.title}
                         </a>
                         <span
-                          className={`${style.bg} ${style.text} px-3 py-1 rounded-full
+                          className={`${style.bg} ${style.darkBg} ${style.text} ${style.darkText} px-3 py-1 rounded-full
                                       text-xs font-semibold whitespace-nowrap`}
                         >
                           {pr.category}
@@ -196,19 +255,19 @@ export default async function Home({
                       </div>
 
                       {/* PR Meta */}
-                      <div className="flex items-center gap-3 text-sm text-gray-500 mb-4">
+                      <div className="flex items-center gap-3 text-sm text-gray-500 dark:text-gray-400 mb-4">
                         <a
                           href={`https://github.com/${pr.author}`}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="flex items-center gap-1 hover:text-blue-600 transition-colors"
+                          className="flex items-center gap-1 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
                         >
                           <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                             <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
                           </svg>
                           @{pr.author}
                         </a>
-                        <span className="text-gray-300">|</span>
+                        <span className="text-gray-300 dark:text-gray-600">|</span>
                         <span className="flex items-center gap-1" title="発行日">
                           <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                             <path fillRule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clipRule="evenodd" />
@@ -218,14 +277,14 @@ export default async function Home({
                       </div>
 
                       {/* PR Summary */}
-                      <p className="text-gray-600 leading-relaxed mb-4">{pr.summary}</p>
+                      <p className="text-gray-600 dark:text-gray-300 leading-relaxed mb-4">{pr.summary}</p>
 
                       {/* Key Points */}
                       {pr.keyPoints.length > 0 && (
                         <ul className="space-y-2 mb-4">
                           {pr.keyPoints.map((point, i) => (
-                            <li key={i} className="flex items-start gap-2 text-sm text-gray-600">
-                              <span className="text-blue-500 mt-1">•</span>
+                            <li key={i} className="flex items-start gap-2 text-sm text-gray-600 dark:text-gray-300">
+                              <span className="text-blue-500 dark:text-blue-400 mt-1">•</span>
                               {point}
                             </li>
                           ))}
@@ -233,14 +292,14 @@ export default async function Home({
                       )}
 
                       {/* File Changes */}
-                      <div className="flex items-center gap-4 pt-4 border-t border-gray-100">
-                        <span className="text-sm text-emerald-600 font-medium">
+                      <div className="flex items-center gap-4 pt-4 border-t border-gray-100 dark:border-gray-700">
+                        <span className="text-sm text-emerald-600 dark:text-emerald-400 font-medium">
                           +{pr.files.added} added
                         </span>
-                        <span className="text-sm text-orange-600 font-medium">
+                        <span className="text-sm text-orange-600 dark:text-orange-400 font-medium">
                           ~{pr.files.modified} modified
                         </span>
-                        <span className="text-sm text-red-600 font-medium">
+                        <span className="text-sm text-red-600 dark:text-red-400 font-medium">
                           -{pr.files.removed} removed
                         </span>
                       </div>
@@ -251,7 +310,7 @@ export default async function Home({
             </section>
 
             {/* Footer */}
-            <footer className="mt-12 pt-6 border-t border-gray-200 text-center text-sm text-gray-500">
+            <footer className="mt-12 pt-6 border-t border-gray-200 dark:border-gray-700 text-center text-sm text-gray-500 dark:text-gray-400">
               Report generated at{" "}
               <time className="font-medium">
                 {new Date(selectedReport.generatedAt).toLocaleString("ja-JP")}
@@ -260,12 +319,12 @@ export default async function Home({
           </>
         ) : (
           <div className="flex flex-col items-center justify-center py-20">
-            <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
-              <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="w-16 h-16 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center mb-4">
+              <svg className="w-8 h-8 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
               </svg>
             </div>
-            <p className="text-gray-500 text-lg">
+            <p className="text-gray-500 dark:text-gray-400 text-lg">
               {reportList.length === 0
                 ? "No reports available yet."
                 : "Failed to load report."}
