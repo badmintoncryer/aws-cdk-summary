@@ -72,10 +72,8 @@ export async function GET(request: Request) {
       }
     }
 
-    reports.sort(
-      (a, b) =>
-        new Date(b.lastModified).getTime() - new Date(a.lastModified).getTime()
-    );
+    // 日付（YYYY-MM-DD）で降順ソート
+    reports.sort((a, b) => b.date.localeCompare(a.date));
 
     return NextResponse.json({ reports });
   } catch (error) {

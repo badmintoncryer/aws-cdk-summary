@@ -67,9 +67,8 @@ async function getReportList(): Promise<ReportFile[]> {
     }
   }
 
-  return files.sort(
-    (a, b) => b.lastModified.getTime() - a.lastModified.getTime()
-  );
+  // 日付（YYYY-MM-DD）で降順ソート
+  return files.sort((a, b) => b.date.localeCompare(a.date));
 }
 
 async function getReport(key: string): Promise<CdkReport | null> {
