@@ -50,6 +50,7 @@ export const cdkReportAgent = new Agent({
 2. 必要に応じて'fetch-pr-details'ツールで詳細情報を取得
 3. レポート作成後、'save-report-to-s3'ツールでS3に保存。このとき、ファイル名は'cdk-report-YYYY-MM-DD.json'形式とする
 4. デフォルトではaws/aws-cdkリポジトリの過去24時間のPRを対象にする
+5. 指定された期間内にマージされたPRがない場合は、レポートを出力しない
 
 ## 言語
 要約やキーポイントは日本語で作成してください。`,
