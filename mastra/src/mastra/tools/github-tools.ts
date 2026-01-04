@@ -12,12 +12,12 @@ const octokit = new Octokit({
 });
 
 /**
- * 過去24時間以内にマージされたPRを取得するツール
+ * 指定期間内にマージされたPRを取得するツール
  */
 export const fetchRecentMergedPRs = createTool({
   id: "fetch-recent-merged-prs",
   description:
-    "指定したGitHubリポジトリで過去24時間以内にマージされたプルリクエストを取得します",
+    "指定したGitHubリポジトリで指定期間内にマージされたプルリクエストを取得します。日付を指定しない場合は過去24時間のPRを取得します。",
   inputSchema: z.object({
     owner: z
       .string()
@@ -27,21 +27,42 @@ export const fetchRecentMergedPRs = createTool({
       .string()
       .describe("リポジトリ名（例: 'aws-cdk'）")
       .default("aws-cdk"),
-    hoursAgo: z
-      .number()
-      .describe("何時間前までのPRを取得するか")
-      .default(24),
+    startDate: z
+      .string()
+      .describe("取得開始日（YYYY-MM-DD形式、例: '2024-01-01'）。省略時は24時間前")
+      .optional(),
+    endDate: z
+      .string()
+      .describe("取得終了日（YYYY-MM-DD形式、例: '2024-01-31'）。省略時は現在日時")
+      .optional(),
   }),
   execute: async ({ context }) => {
-    const { owner, repo, hoursAgo } = context;
+    const { owner, repo, startDate, endDate } = context;
 
     try {
-      // 24時間前のISO日時を計算
-      const since = new Date(Date.now() - hoursAgo * 60 * 60 * 1000);
-      const sinceISO = since.toISOString();
+      // 日付範囲の計算
+      let fromDate: string;
+      let toDate: string;
+
+      if (startDate) {
+        // YYYY-MM-DD形式をそのまま使用
+        fromDate = startDate;
+      } else {
+        // デフォルト: 24時間前
+        const since = new Date(Date.now() - 24 * 60 * 60 * 1000);
+        fromDate = since.toISOString().split("T")[0];
+      }
+
+      if (endDate) {
+        toDate = endDate;
+      } else {
+        // デフォルト: 現在日時
+        toDate = new Date().toISOString().split("T")[0];
+      }
 
       // GitHub Search APIを使用してマージ済みPRを検索
-      const searchQuery = `repo:${owner}/${repo} is:pr is:merged merged:>=${sinceISO}`;
+      // 期間指定: merged:YYYY-MM-DD..YYYY-MM-DD
+      const searchQuery = `repo:${owner}/${repo} is:pr is:merged merged:${fromDate}..${toDate}`;
 
       const { data } = await octokit.rest.search.issuesAndPullRequests({
         q: searchQuery,
@@ -56,6 +77,7 @@ export const fetchRecentMergedPRs = createTool({
         title: item.title,
         url: item.html_url,
         author: item.user?.login || "unknown",
+        createdAt: item.created_at,
         mergedAt: item.pull_request?.merged_at || item.closed_at,
         labels: item.labels.map((label) =>
           typeof label === "string" ? label : label.name
@@ -68,7 +90,10 @@ export const fetchRecentMergedPRs = createTool({
         count: prs.length,
         prs,
         searchQuery,
-        timeRange: `${hoursAgo}時間前から現在まで`,
+        period: {
+          from: fromDate,
+          to: toDate,
+        },
       };
     } catch (error) {
       return {
@@ -117,6 +142,7 @@ export const fetchPRDetails = createTool({
           body: pr.body || "",
           state: pr.state,
           merged: pr.merged,
+          createdAt: pr.created_at,
           mergedAt: pr.merged_at,
           author: pr.user?.login || "unknown",
           url: pr.html_url,

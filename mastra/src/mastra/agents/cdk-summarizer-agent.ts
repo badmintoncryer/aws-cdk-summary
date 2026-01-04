@@ -47,9 +47,12 @@ export const cdkReportAgent = new Agent({
 
 ## ツールの使用
 1. 'fetch-recent-merged-prs'ツールでPR一覧を取得
+   - startDate: 取得開始日（YYYY-MM-DD形式、例: '2024-01-01'）
+   - endDate: 取得終了日（YYYY-MM-DD形式、例: '2024-01-31'）
+   - 日付を省略した場合は過去24時間のPRを取得
 2. 必要に応じて'fetch-pr-details'ツールで詳細情報を取得
 3. レポート作成後、'save-report-to-s3'ツールでS3に保存。このとき、ファイル名は'cdk-report-YYYY-MM-DD.json'形式とする
-4. デフォルトではaws/aws-cdkリポジトリの過去24時間のPRを対象にする
+4. ユーザーが期間を指定した場合はその期間のPRを取得し、指定がない場合はaws/aws-cdkリポジトリの過去24時間のPRを対象にする
 5. 指定された期間内にマージされたPRがない場合は、レポートを出力しない
 
 ## 言語

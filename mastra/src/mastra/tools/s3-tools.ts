@@ -29,6 +29,7 @@ const cdkReportSchema = z.object({
       title: z.string().describe("PRタイトル"),
       url: z.string().describe("PRのURL"),
       author: z.string().describe("作成者"),
+      createdAt: z.string().describe("PR発行日時（ISO 8601形式）"),
       mergedAt: z.string().describe("マージ日時"),
       labels: z.array(z.string()).describe("ラベル一覧"),
       category: z.string().describe("カテゴリ（feat, fix, docs, chore等）"),
