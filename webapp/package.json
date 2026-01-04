@@ -11,6 +11,7 @@
   "dependencies": {
     "@aws-sdk/client-s3": "^3.962.0",
     "next": "16.1.1",
+    "next-themes": "^0.4.6",
     "react": "^19.2.3",
     "react-dom": "^19.2.3"
   },
@@ -19,10 +20,10 @@
     "@types/node": "^25.0.3",
     "@types/react": "^19.2.7",
     "@types/react-dom": "^19.2.3",
-    "typescript": "^5.9.3",
-    "tailwindcss": "^4.1.18",
+    "autoprefixer": "^10.4.23",
     "postcss": "^8.5.6",
-    "autoprefixer": "^10.4.23"
+    "tailwindcss": "^4.1.18",
+    "typescript": "^5.9.3"
   },
   "packageManager": "pnpm@9.14.4+sha512.c8180b3fbe4e4bca02c94234717896b5529740a6cbadf19fa78254270403ea2f27d4e1d46a08a0f56c89b63dc8ebfd3ee53326da720273794e6200fcf0d184ab"
 }
