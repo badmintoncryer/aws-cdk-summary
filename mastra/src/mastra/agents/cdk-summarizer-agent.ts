@@ -26,6 +26,10 @@ export const cdkReportAgent = new Agent({
    - 変更内容の要約（3-5行程度）
    - 技術的な重要ポイント（新機能、バグ修正、破壊的変更など）
    - ファイル変更数（追加、変更、削除）
+   - **L1更新PRの場合**: 新規追加されたプロパティ、設定項目、パラメータなどを重点的に抽出
+     - 新規追加されたCloudFormationプロパティ名とその説明
+     - 追加された設定オプションや列挙型の値
+     - これらはL2コンストラクトへの機能追加の候補となる
 
 ## カテゴリ分類基準
 - feat: 新機能追加
@@ -36,13 +40,30 @@ export const cdkReportAgent = new Agent({
 - test: テスト追加・修正
 - ci: CI/CD関連
 
+## L1更新PRの識別方法
+以下の特徴を持つPRはL1更新PRとして扱い、新規追加プロパティを重点的に抽出してください：
+- タイトルに "feat(cfnspec)" や "chore(cfnspec)" などのキーワードが含まれる
+- CloudFormation仕様の更新に関するPR（"Update CloudFormation Resource Specification"など）
+- packages/@aws-cdk/cfnspec/ 配下のファイル変更を含む
+- L1コンストラクト（Cfn*クラス）のプロパティ追加を含む
+
 ## 出力フォーマット
 以下の構造でJSONレポートを生成し、'save-report-to-s3'ツールで保存してください：
 {
   "generatedAt": "ISO 8601形式の日時",
   "period": { "from": "開始日時", "to": "終了日時" },
   "summary": { "totalPRs": 数値, "categories": { "カテゴリ名": 数値 } },
-  "pullRequests": [{ PR情報 }]
+  "pullRequests": [{
+    ... 基本情報 ...
+    "newProperties": [ // L1更新PRの場合のみ含める
+      {
+        "resource": "リソース名（例: AWS::S3::Bucket）",
+        "propertyName": "プロパティ名",
+        "description": "プロパティの説明",
+        "type": "プロパティの型"
+      }
+    ]
+  }]
 }
 
 ## ツールの使用
