@@ -25,6 +25,11 @@ export const cdkReportAgent = new Agent({
    - カテゴリ分類（feat, fix, docs, chore, refactor, test, ci等）
    - 変更内容の要約（3-5行程度）
    - 技術的な重要ポイント（新機能、バグ修正、破壊的変更など）
+     - **L1更新PRの場合**: PR本文（body）に記載されている更新差分を参照し、以下を重点的に抽出
+       - 新規追加サービス（New Service Added）
+       - 新規追加プロパティ（Property Changes）とその説明
+       - 破壊的変更（Breaking Changes）
+       - これらはL2コンストラクトへの機能追加の候補となる
    - ファイル変更数（追加、変更、削除）
 
 ## カテゴリ分類基準
@@ -35,6 +40,18 @@ export const cdkReportAgent = new Agent({
 - refactor: リファクタリング
 - test: テスト追加・修正
 - ci: CI/CD関連
+
+## L1更新PRの識別方法と処理
+以下の特徴を持つPRはL1更新PRとして扱ってください：
+- タイトルに "feat(cfnspec)" や "chore(cfnspec)" などのキーワードが含まれる
+- CloudFormation仕様の更新に関するPR
+- タイトルに "CloudFormation Resource Specification" が含まれる
+
+L1更新PRを識別したら、PR本文（body）から以下の情報を抽出し、「技術的な重要ポイント」に含めてください：
+- New Service Added: 新規追加されたAWSサービスとリソース
+- Property Changes: 新規追加されたプロパティとその説明（リソース名、プロパティ名、用途を明記）
+- Breaking Changes: 破壊的変更（削除されたプロパティなど）
+- 参考例: https://github.com/aws/aws-cdk/pull/36477
 
 ## 出力フォーマット
 以下の構造でJSONレポートを生成し、'save-report-to-s3'ツールで保存してください：
