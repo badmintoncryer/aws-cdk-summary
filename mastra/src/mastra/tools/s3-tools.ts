@@ -45,6 +45,40 @@ const cdkReportSchema = z.object({
 });
 
 /**
+ * L1更新サマリーのJSONスキーマ
+ */
+const l1UpdateSummarySchema = z.object({
+  generatedAt: z.string().describe("レポート生成日時（ISO 8601形式）"),
+  reportDate: z.string().describe("レポート対象日（YYYY-MM-DD形式）"),
+  l1Updates: z.array(
+    z.object({
+      prNumber: z.number().describe("PR番号"),
+      title: z.string().describe("PRタイトル"),
+      url: z.string().describe("PRのURL"),
+      mergedAt: z.string().describe("マージ日時"),
+      newServices: z
+        .array(z.string())
+        .optional()
+        .describe("新規追加されたAWSサービス（例: AWS::Cases）"),
+      propertyChanges: z
+        .array(
+          z.object({
+            resource: z.string().describe("リソース名（例: AWS::EC2::ClientVpnEndpoint）"),
+            property: z.string().describe("プロパティ名"),
+            description: z.string().describe("プロパティの説明"),
+          })
+        )
+        .optional()
+        .describe("新規追加されたプロパティ"),
+      breakingChanges: z
+        .array(z.string())
+        .optional()
+        .describe("破壊的変更の内容"),
+    })
+  ),
+});
+
+/**
  * 構造化JSONレポートをS3に保存するツール
  */
 export const saveReportToS3 = createTool({
@@ -106,6 +140,84 @@ export const saveReportToS3 = createTool({
           "generated-at": new Date().toISOString(),
           "report-period-from": report.period.from,
           "report-period-to": report.period.to,
+        },
+      });
+
+      await s3Client.send(command);
+
+      return {
+        success: true,
+        objectKey,
+        bucketName,
+        s3Uri: `s3://${bucketName}/${objectKey}`,
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error:
+          error instanceof Error ? error.message : "不明なエラーが発生しました",
+      };
+    }
+  },
+});
+
+/**
+ * L1更新サマリーをS3に保存するツール
+ */
+export const saveL1SummaryToS3 = createTool({
+  id: "save-l1-summary-to-s3",
+  description:
+    "L1更新PRの軽量サマリーをS3バケットの専用フォルダに保存します。L2コンストラクトへの機能追加ネタとして活用できる形式で保存します。",
+  inputSchema: z.object({
+    summary: l1UpdateSummarySchema.describe("L1更新サマリーデータ"),
+    filename: z
+      .string()
+      .describe("ファイル名（.json拡張子なしでも可、自動付与される）。省略時はレポート対象日を使用")
+      .optional(),
+  }),
+  outputSchema: z.object({
+    success: z.boolean(),
+    objectKey: z.string().optional(),
+    bucketName: z.string().optional(),
+    s3Uri: z.string().optional(),
+    error: z.string().optional(),
+  }),
+  execute: async ({ context }) => {
+    const { summary, filename } = context;
+
+    try {
+      const bucketName = process.env.REPORT_BUCKET_NAME;
+      if (!bucketName) {
+        throw new Error(
+          "REPORT_BUCKET_NAME environment variable is not set"
+        );
+      }
+
+      // ファイル名の決定（省略時はレポート対象日を使用）
+      const baseFilename = filename || `l1-${summary.reportDate}`;
+
+      // ファイル名の正規化（.json拡張子の確保）
+      const normalizedFilename = baseFilename.endsWith(".json")
+        ? baseFilename
+        : `${baseFilename}.json`;
+
+      // L1更新専用のフォルダに保存
+      const objectKey = `reports/l1-updates/${normalizedFilename}`;
+
+      // JSONに変換
+      const jsonContent = JSON.stringify(summary, null, 2);
+
+      // S3にアップロード
+      const command = new PutObjectCommand({
+        Bucket: bucketName,
+        Key: objectKey,
+        Body: jsonContent,
+        ContentType: "application/json; charset=utf-8",
+        Metadata: {
+          "generated-by": "cdk-report-agent",
+          "generated-at": new Date().toISOString(),
+          "report-date": summary.reportDate,
+          "l1-update-count": summary.l1Updates.length.toString(),
         },
       });
 

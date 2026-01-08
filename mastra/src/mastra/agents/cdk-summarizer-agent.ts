@@ -6,7 +6,7 @@ import {
   fetchRecentMergedPRs,
   fetchPRDetails,
 } from "../tools/github-tools";
-import { saveReportToS3 } from "../tools/s3-tools";
+import { saveReportToS3, saveL1SummaryToS3 } from "../tools/s3-tools";
 
 export const cdkReportAgent = new Agent({
   name: "cdk-report-agent",
@@ -69,8 +69,16 @@ L1更新PRを識別したら、PR本文（body）から以下の情報を抽出�
    - 日付を省略した場合は過去24時間のPRを取得
 2. 必要に応じて'fetch-pr-details'ツールで詳細情報を取得
 3. レポート作成後、'save-report-to-s3'ツールでS3に保存。このとき、ファイル名は'cdk-report-YYYY-MM-DD.json'形式とする
-4. ユーザーが期間を指定した場合はその期間のPRを取得し、指定がない場合はaws/aws-cdkリポジトリの過去24時間のPRを対象にする
-5. 指定された期間内にマージされたPRがない場合は、レポートを出力しない
+4. **L1更新PRが含まれる場合**: 'save-l1-summary-to-s3'ツールで軽量サマリーも別途保存
+   - reportDate: レポート対象日（YYYY-MM-DD形式）
+   - l1Updates: L1更新PRのみを抽出した配列
+     - 各PRごとに: prNumber, title, url, mergedAt, newServices, propertyChanges, breakingChanges を含める
+     - newServices: 新規追加されたAWSサービスの配列（例: ["AWS::Cases"]）
+     - propertyChanges: 新規追加プロパティの配列（resource, property, descriptionを含むオブジェクト）
+     - breakingChanges: 破壊的変更の配列
+   - このサマリーはL2コンストラクトへのPR作成ネタとして活用される
+5. ユーザーが期間を指定した場合はその期間のPRを取得し、指定がない場合はaws/aws-cdkリポジトリの過去24時間のPRを対象にする
+6. 指定された期間内にマージされたPRがない場合は、レポートを出力しない
 
 ## 言語
 要約やキーポイントは日本語で作成してください。`,
@@ -79,6 +87,7 @@ L1更新PRを識別したら、PR本文（body）から以下の情報を抽出�
     fetchRecentMergedPRs,
     fetchPRDetails,
     saveReportToS3,
+    saveL1SummaryToS3,
   },
   memory: new Memory({
     storage: new LibSQLStore({

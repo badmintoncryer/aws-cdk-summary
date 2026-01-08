@@ -5,6 +5,7 @@ import {
 } from "@aws-sdk/client-s3";
 import { DateSelector } from "./date-selector";
 import { ThemeToggle } from "./theme-toggle";
+import Link from "next/link";
 
 interface PullRequest {
   number: number;
@@ -184,6 +185,13 @@ export default async function Home({
             <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">Pull Request Analysis Report</p>
           </div>
           <div className="flex items-center gap-4">
+            <Link
+              href="/l1-updates"
+              className="text-sm px-3 py-1.5 bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300
+                        rounded-lg hover:bg-purple-200 dark:hover:bg-purple-900/50 transition-colors font-medium"
+            >
+              L1 Updates
+            </Link>
             <DateSelector
               dates={reportList.map((r) => r.date)}
               selectedDate={selectedDate || ""}
