@@ -179,29 +179,57 @@ export default async function Home({
     <div className="min-h-screen">
       {/* Header */}
       <header className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 sticky top-0 z-10">
-        <div className="max-w-6xl mx-auto px-6 py-4 flex justify-between items-center">
-          <div>
-            <h1 className="text-xl font-bold text-gray-900 dark:text-white">AWS CDK Daily Summary</h1>
-            <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">Pull Request Analysis Report</p>
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-3 sm:py-4">
+          {/* Mobile Layout */}
+          <div className="flex flex-col gap-3 sm:hidden">
+            <div className="flex items-center justify-between">
+              <div className="flex-1 min-w-0">
+                <h1 className="text-base font-bold text-gray-900 dark:text-white truncate">AWS CDK Daily Summary</h1>
+              </div>
+              <ThemeToggle />
+            </div>
+            <div className="flex items-center gap-2">
+              <Link
+                href="/l1-updates"
+                className="flex-shrink-0 text-xs px-2.5 py-1.5 bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300
+                          rounded-lg hover:bg-purple-200 dark:hover:bg-purple-900/50 transition-colors font-medium"
+              >
+                L1
+              </Link>
+              <div className="flex-1">
+                <DateSelector
+                  dates={reportList.map((r) => r.date)}
+                  selectedDate={selectedDate || ""}
+                />
+              </div>
+            </div>
           </div>
-          <div className="flex items-center gap-4">
-            <Link
-              href="/l1-updates"
-              className="text-sm px-3 py-1.5 bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300
-                        rounded-lg hover:bg-purple-200 dark:hover:bg-purple-900/50 transition-colors font-medium"
-            >
-              L1 Updates
-            </Link>
-            <DateSelector
-              dates={reportList.map((r) => r.date)}
-              selectedDate={selectedDate || ""}
-            />
-            <ThemeToggle />
+
+          {/* Desktop Layout */}
+          <div className="hidden sm:flex justify-between items-center">
+            <div>
+              <h1 className="text-xl font-bold text-gray-900 dark:text-white">AWS CDK Daily Summary</h1>
+              <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">Pull Request Analysis Report</p>
+            </div>
+            <div className="flex items-center gap-4">
+              <Link
+                href="/l1-updates"
+                className="text-sm px-3 py-1.5 bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300
+                          rounded-lg hover:bg-purple-200 dark:hover:bg-purple-900/50 transition-colors font-medium"
+              >
+                L1 Updates
+              </Link>
+              <DateSelector
+                dates={reportList.map((r) => r.date)}
+                selectedDate={selectedDate || ""}
+              />
+              <ThemeToggle />
+            </div>
           </div>
         </div>
       </header>
 
-      <main className="max-w-6xl mx-auto px-6 py-8">
+      <main className="max-w-6xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
         {selectedReport ? (
           <>
             {/* Summary Cards */}

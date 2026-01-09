@@ -15,8 +15,8 @@ export function DateSelector({ dates, selectedDate }: DateSelectorProps) {
   };
 
   return (
-    <div className="flex items-center gap-3">
-      <label htmlFor="date" className="text-sm font-medium text-gray-600 dark:text-gray-400">
+    <div className="flex items-center gap-2 sm:gap-3 w-full sm:w-auto">
+      <label htmlFor="date" className="hidden sm:block text-sm font-medium text-gray-600 dark:text-gray-400">
         Date
       </label>
       <select
@@ -24,7 +24,7 @@ export function DateSelector({ dates, selectedDate }: DateSelectorProps) {
         name="date"
         value={selectedDate}
         onChange={handleChange}
-        className="px-4 py-2 text-sm bg-white dark:bg-gray-800
+        className="flex-1 sm:flex-initial px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm bg-white dark:bg-gray-800
                    text-gray-900 dark:text-gray-100
                    border border-gray-200 dark:border-gray-700 rounded-lg shadow-sm
                    focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent
