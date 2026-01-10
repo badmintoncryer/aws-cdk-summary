@@ -101,32 +101,60 @@ export default async function L1UpdatesPage({
     <div className="min-h-screen">
       {/* Header */}
       <header className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 sticky top-0 z-10">
-        <div className="max-w-6xl mx-auto px-6 py-4 flex justify-between items-center">
-          <div>
-            <h1 className="text-xl font-bold text-gray-900 dark:text-white">
-              L1 Update Summary
-            </h1>
-            <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">
-              CloudFormation Resource Specification Updates
-            </p>
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-3 sm:py-4">
+          {/* Mobile Layout */}
+          <div className="flex flex-col gap-3 sm:hidden">
+            <div className="flex items-center justify-between">
+              <div className="flex-1 min-w-0">
+                <h1 className="text-base font-bold text-gray-900 dark:text-white truncate">L1 Update Summary</h1>
+              </div>
+              <ThemeToggle />
+            </div>
+            <div className="flex items-center gap-2">
+              <Link
+                href="/"
+                className="flex-shrink-0 text-xs px-2.5 py-1.5 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300
+                          rounded-lg hover:bg-blue-200 dark:hover:bg-blue-900/50 transition-colors font-medium"
+              >
+                All
+              </Link>
+              <div className="flex-1">
+                <DateSelector
+                  dates={summaryList.map((s) => s.date)}
+                  selectedDate={selectedDate || ""}
+                />
+              </div>
+            </div>
           </div>
-          <div className="flex items-center gap-4">
-            <Link
-              href="/"
-              className="text-sm text-blue-600 dark:text-blue-400 hover:underline"
-            >
-              ← Back to All Reports
-            </Link>
-            <DateSelector
-              dates={summaryList.map((s) => s.date)}
-              selectedDate={selectedDate || ""}
-            />
-            <ThemeToggle />
+
+          {/* Desktop Layout */}
+          <div className="hidden sm:flex justify-between items-center">
+            <div>
+              <h1 className="text-xl font-bold text-gray-900 dark:text-white">
+                L1 Update Summary
+              </h1>
+              <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">
+                CloudFormation Resource Specification Updates
+              </p>
+            </div>
+            <div className="flex items-center gap-4">
+              <Link
+                href="/"
+                className="text-sm text-blue-600 dark:text-blue-400 hover:underline"
+              >
+                ← Back to All Reports
+              </Link>
+              <DateSelector
+                dates={summaryList.map((s) => s.date)}
+                selectedDate={selectedDate || ""}
+              />
+              <ThemeToggle />
+            </div>
           </div>
         </div>
       </header>
 
-      <main className="max-w-6xl mx-auto px-6 py-8">
+      <main className="max-w-6xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
         {selectedSummary && selectedSummary.l1Updates.length > 0 ? (
           <>
             {/* Summary */}
