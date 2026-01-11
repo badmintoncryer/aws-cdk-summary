@@ -1,0 +1,72 @@
+name: Deploy to AWS
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+env:
+  AWS_REGION: us-west-2
+  NODE_VERSION: '24'
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'pnpm'
+
+      - name: Configure AWS credentials with OIDC
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::214794239830:role/GithubActionsDeployRole
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Install CDK dependencies
+        working-directory: ./cdk
+        run: pnpm install --frozen-lockfile
+
+      - name: Build CDK
+        working-directory: ./cdk
+        run: pnpm run build
+
+      - name: Install Mastra dependencies
+        working-directory: ./mastra
+        run: pnpm install --frozen-lockfile
+
+      - name: Build Mastra
+        working-directory: ./mastra
+        run: pnpm run build
+
+      - name: Install webapp dependencies
+        working-directory: ./webapp
+        run: pnpm install --frozen-lockfile
+
+      - name: Build webapp
+        working-directory: ./webapp
+        run: pnpm run build
+
+      - name: CDK Bootstrap (if needed)
+        working-directory: ./cdk
+        run: pnpm cdk bootstrap || true
+
+      - name: CDK Deploy
+        working-directory: ./cdk
+        run: pnpm cdk deploy --all --require-approval never

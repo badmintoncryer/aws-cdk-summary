@@ -59,7 +59,15 @@ cd ../mastra && pnpm install
 cd ../webapp && pnpm install
 ```
 
-### デプロイ
+### 自動デプロイ設定（GitHub Actions）
+
+このプロジェクトは、mainブランチへのpush時に自動的にAWSへデプロイされます。
+
+- `.github/workflows/deploy.yml`: mainブランチへのpush時に自動デプロイ
+- 手動実行も可能（Actions > Deploy to AWS > Run workflow）
+- OIDC連携により `arn:aws:iam::214794239830:role/GithubActionsDeployRole` を使用
+
+### 手動デプロイ
 
 ```bash
 cd cdk
