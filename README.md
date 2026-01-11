@@ -59,7 +59,23 @@ cd ../mastra && pnpm install
 cd ../webapp && pnpm install
 ```
 
-### デプロイ
+### 自動デプロイ設定（GitHub Actions）
+
+このプロジェクトは、mainブランチへのpush時に自動的にAWSへデプロイされます。
+
+#### 必要なGitHub Secrets
+
+リポジトリの Settings > Secrets and variables > Actions で以下のSecretを設定してください：
+
+- `AWS_DEPLOY_ROLE_ARN`: OIDC連携用のIAMロールARN
+  - 例: `arn:aws:iam::123456789012:role/GitHubActionsDeployRole`
+
+#### ワークフロー
+
+- `.github/workflows/deploy.yml`: mainブランチへのpush時に自動デプロイ
+- 手動実行も可能（Actions > Deploy to AWS > Run workflow）
+
+### 手動デプロイ
 
 ```bash
 cd cdk
