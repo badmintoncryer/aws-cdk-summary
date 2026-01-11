@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
 
 env:
-  AWS_REGION: ap-northeast-1
+  AWS_REGION: us-west-2
   NODE_VERSION: '20'
 
 permissions:

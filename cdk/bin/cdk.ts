@@ -4,5 +4,5 @@ import { CdkSummaryStack } from '../lib/cdk-stack';
 
 const app = new cdk.App();
 new CdkSummaryStack(app, 'CdkSummaryStack', {
-  env: { region: 'ap-northeast-1' },
+  env: { region: 'us-west-2' },
 });

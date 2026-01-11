@@ -68,7 +68,7 @@ cd ../webapp && pnpm install
 リポジトリの Settings > Secrets and variables > Actions で以下のSecretを設定してください：
 
 - `AWS_DEPLOY_ROLE_ARN`: OIDC連携用のIAMロールARN
-  - 例: `arn:aws:iam::123456789012:role/GitHubActionsDeployRole`
+  - 値: `arn:aws:iam::214794239830:role/GithubActionsDeployRole`
 
 #### ワークフロー
 
