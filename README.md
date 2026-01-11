@@ -63,17 +63,9 @@ cd ../webapp && pnpm install
 
 このプロジェクトは、mainブランチへのpush時に自動的にAWSへデプロイされます。
 
-#### 必要なGitHub Secrets
-
-リポジトリの Settings > Secrets and variables > Actions で以下のSecretを設定してください：
-
-- `AWS_DEPLOY_ROLE_ARN`: OIDC連携用のIAMロールARN
-  - 値: `arn:aws:iam::214794239830:role/GithubActionsDeployRole`
-
-#### ワークフロー
-
 - `.github/workflows/deploy.yml`: mainブランチへのpush時に自動デプロイ
 - 手動実行も可能（Actions > Deploy to AWS > Run workflow）
+- OIDC連携により `arn:aws:iam::214794239830:role/GithubActionsDeployRole` を使用
 
 ### 手動デプロイ
 
