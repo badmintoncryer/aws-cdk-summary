@@ -32,6 +32,7 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'pnpm'
+          cache-dependency-path: './cdk/pnpm-lock.yaml'
 
       - name: Configure AWS credentials with OIDC
         uses: aws-actions/configure-aws-credentials@v4
@@ -43,30 +44,6 @@ jobs:
         working-directory: ./cdk
         run: pnpm install --frozen-lockfile
 
-      - name: Build CDK
-        working-directory: ./cdk
-        run: pnpm run build
-
-      - name: Install Mastra dependencies
-        working-directory: ./mastra
-        run: pnpm install --frozen-lockfile
-
-      - name: Build Mastra
-        working-directory: ./mastra
-        run: pnpm run build
-
-      - name: Install webapp dependencies
-        working-directory: ./webapp
-        run: pnpm install --frozen-lockfile
-
-      - name: Build webapp
-        working-directory: ./webapp
-        run: pnpm run build
-
-      - name: CDK Bootstrap (if needed)
-        working-directory: ./cdk
-        run: pnpm cdk bootstrap || true
-
       - name: CDK Deploy
         working-directory: ./cdk
-        run: pnpm cdk deploy --all --require-approval never
+        run: pnpm exec cdk deploy --all --require-approval never
