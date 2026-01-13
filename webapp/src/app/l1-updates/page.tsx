@@ -211,7 +211,7 @@ export default async function L1UpdatesPage({
                             <span
                               key={i}
                               className="bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300
-                                        px-3 py-1 rounded-full text-xs font-medium"
+                                        px-3 py-1 rounded-full text-xs font-medium break-all"
                             >
                               {service}
                             </span>
@@ -231,15 +231,15 @@ export default async function L1UpdatesPage({
                             {update.propertyChanges.map((change, i) => (
                               <div
                                 key={i}
-                                className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-3"
+                                className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-3 overflow-hidden"
                               >
-                                <div className="font-mono text-sm text-blue-900 dark:text-blue-300 font-semibold">
+                                <div className="font-mono text-sm text-blue-900 dark:text-blue-300 font-semibold break-all">
                                   {change.resource}
                                 </div>
-                                <div className="font-mono text-xs text-blue-700 dark:text-blue-400 mt-1">
+                                <div className="font-mono text-xs text-blue-700 dark:text-blue-400 mt-1 break-all">
                                   {change.property}
                                 </div>
-                                <div className="text-sm text-gray-600 dark:text-gray-300 mt-2">
+                                <div className="text-sm text-gray-600 dark:text-gray-300 mt-2 break-words">
                                   {change.description}
                                 </div>
                               </div>
