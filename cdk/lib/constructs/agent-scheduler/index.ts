@@ -72,6 +72,7 @@ export class AgentScheduler extends Construct {
     this.invokerLambda = new lambdaNodejs.NodejsFunction(this, "Invoker", {
       entry: path.join(__dirname, "handlers/invoke-agent.ts"),
       runtime: lambda.Runtime.NODEJS_22_X,
+      architecture: lambda.Architecture.ARM_64,
       timeout: props.timeout ?? cdk.Duration.minutes(15),
       environment: {
         AGENT_RUNTIME_ARN: props.agentRuntime.agentRuntimeArn,
