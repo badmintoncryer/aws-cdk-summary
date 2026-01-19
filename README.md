@@ -115,6 +115,25 @@ runtimeEnvironmentVariables: {
 }
 ```
 
+### ファイルフィルタリング
+
+PR詳細取得時に、LLMへの負荷を軽減するため不要な大きなファイルを自動的に除外します。
+
+**除外されるファイル**:
+- integ testスナップショット (`.integ.snapshot`, `cdk.out/`)
+- ユニットテストファイル (`.test.ts`, `.test.tsx`, `__tests__/`)
+- スナップショットファイル (`.snapshot.json`, `/__snapshots__/`)
+- ビルド成果物 (`dist/`, `build/`, `node_modules/`)
+- ロックファイル (`yarn.lock`, `package-lock.json`, `pnpm-lock.yaml`)
+- 圧縮ファイル (`.min.js`, `.min.css`)
+
+**含まれるファイル**:
+- プロダクションコード (`src/`, `lib/`, `packages/` など)
+- ドキュメント (README.md, `docs/` など)
+- 設定ファイル (package.json, tsconfig.json など)
+
+この機能により、エージェントは効率的にPRの本質的な変更のみを分析できます。
+
 ## 出力
 
 デプロイ後、以下の情報が出力されます:

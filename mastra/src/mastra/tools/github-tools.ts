@@ -12,6 +12,52 @@ const octokit = new Octokit({
 });
 
 /**
+ * LLMに渡すには不要な大きなファイルを除外するフィルター
+ * integ testスナップショット、ユニットテストなどを除外
+ */
+function shouldIncludeFile(filename: string): boolean {
+  // 除外パターン
+  const excludePatterns = [
+    // integ testスナップショット（膨大な行数）
+    ".integ.snapshot",
+    "cdk.out/",
+
+    // ユニットテスト
+    ".test.ts",
+    ".test.tsx",
+    ".test.js",
+    ".test.jsx",
+    "__tests__/",
+    "/test/",
+
+    // スナップショット
+    ".snapshot.json",
+    ".snapshot",
+    "/__snapshots__/",
+
+    // その他の大きな生成ファイル
+    ".generated.",
+    "dist/",
+    "build/",
+    "node_modules/",
+    ".min.js",
+    ".min.css",
+    "yarn.lock",
+    "package-lock.json",
+    "pnpm-lock.yaml",
+  ];
+
+  // いずれかのパターンに一致する場合は除外
+  for (const pattern of excludePatterns) {
+    if (filename.includes(pattern)) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+/**
  * 指定期間内にマージされたPRを取得するツール
  */
 export const fetchRecentMergedPRs = createTool({
@@ -108,10 +154,12 @@ export const fetchRecentMergedPRs = createTool({
 
 /**
  * 特定のPRの詳細情報を取得するツール
+ * 注: integ testスナップショット、ユニットテストなどの大きなファイルは自動的に除外されます
  */
 export const fetchPRDetails = createTool({
   id: "fetch-pr-details",
-  description: "指定したプルリクエストの詳細情報を取得します",
+  description:
+    "指定したプルリクエストの詳細情報を取得します。integ testスナップショットやユニットテストなどの大きなファイルは自動的に除外され、プロダクションコードとドキュメントのみが含まれます。",
   inputSchema: z.object({
     owner: z.string().describe("リポジトリのオーナー名"),
     repo: z.string().describe("リポジトリ名"),
@@ -134,6 +182,12 @@ export const fetchPRDetails = createTool({
         pull_number: pullNumber,
       });
 
+      // 不要なファイル（integ test、ユニットテストなど）を除外
+      const filteredFiles = files.filter((file) =>
+        shouldIncludeFile(file.filename)
+      );
+      const excludedFilesCount = files.length - filteredFiles.length;
+
       return {
         success: true,
         pr: {
@@ -149,7 +203,9 @@ export const fetchPRDetails = createTool({
           additions: pr.additions,
           deletions: pr.deletions,
           changedFiles: pr.changed_files,
-          files: files.map((file) => ({
+          totalFiles: files.length,
+          excludedFilesCount,
+          files: filteredFiles.map((file) => ({
             filename: file.filename,
             status: file.status,
             additions: file.additions,
