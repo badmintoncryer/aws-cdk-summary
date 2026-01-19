@@ -36,6 +36,8 @@ export class CdkSummaryStack extends cdk.Stack {
       additionalPolicies: [s3WritePolicy],
       runtimeEnvironmentVariables: {
         REPORT_BUCKET_NAME: reportBucket.bucketName,
+        // ツール使用回数制限（無限ループ防止）
+        MAX_TOOL_CALLS: "50",
       },
     });
 

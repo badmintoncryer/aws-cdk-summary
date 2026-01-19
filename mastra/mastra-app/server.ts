@@ -1,5 +1,6 @@
 import express, { Request, Response } from 'express';
 import { mastra } from "../src/mastra"
+import { toolLimiter } from "../src/mastra/agents/cdk-summarizer-agent";
 
 const app = express();
 const port = 8080;
@@ -36,11 +37,15 @@ app.post('/invocations', async (req: Request, res: Response) => {
 
         console.log("Processing input:", inputText);
 
+        // ツール使用回数カウンターをリセット（新しいリクエストごとにカウントをリセット）
+        toolLimiter.reset();
+
         // Mastraエージェントを実行
         const agent = mastra.getAgent("cdkReportAgent");
         const result = await agent.generate(inputText);
 
         console.log("Agent response:", result.text);
+        console.log(`Total tool calls in this request: ${toolLimiter.getCallCount()}`);
 
         // レスポンスをバイナリで返す
         const responseBuffer = Buffer.from(result.text, 'utf-8');
