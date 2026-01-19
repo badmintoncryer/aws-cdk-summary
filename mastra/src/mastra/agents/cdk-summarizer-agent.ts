@@ -7,6 +7,16 @@ import {
   fetchPRDetails,
 } from "../tools/github-tools";
 import { saveReportToS3, saveL1SummaryToS3 } from "../tools/s3-tools";
+import { ToolCallLimiter, wrapToolWithLimiter } from "../lib/tool-limiter";
+
+// ツール使用回数制限を初期化
+const toolLimiter = new ToolCallLimiter();
+
+// 各ツールをリミッターでラップ
+const limitedFetchRecentMergedPRs = wrapToolWithLimiter(fetchRecentMergedPRs, toolLimiter);
+const limitedFetchPRDetails = wrapToolWithLimiter(fetchPRDetails, toolLimiter);
+const limitedSaveReportToS3 = wrapToolWithLimiter(saveReportToS3, toolLimiter);
+const limitedSaveL1SummaryToS3 = wrapToolWithLimiter(saveL1SummaryToS3, toolLimiter);
 
 export const cdkReportAgent = new Agent({
   name: "cdk-report-agent",
@@ -81,13 +91,17 @@ L1更新PRを識別したら、PR本文（body）から以下の情報を抽出�
 6. 指定された期間内にマージされたPRがない場合は、レポートを出力しない
 
 ## 言語
-要約やキーポイントは日本語で作成してください。`,
+要約やキーポイントは日本語で作成してください。
+
+## 重要な制約
+- エージェントは無限ループを防ぐため、ツール使用回数に制限があります（デフォルト: 50回）
+- 制限を超えると処理が中断されるため、効率的にツールを使用してください`,
   model: bedrock(model),
   tools: {
-    fetchRecentMergedPRs,
-    fetchPRDetails,
-    saveReportToS3,
-    saveL1SummaryToS3,
+    fetchRecentMergedPRs: limitedFetchRecentMergedPRs,
+    fetchPRDetails: limitedFetchPRDetails,
+    saveReportToS3: limitedSaveReportToS3,
+    saveL1SummaryToS3: limitedSaveL1SummaryToS3,
   },
   memory: new Memory({
     storage: new LibSQLStore({
@@ -95,3 +109,6 @@ L1更新PRを識別したら、PR本文（body）から以下の情報を抽出�
     }),
   }),
 });
+
+// ツールリミッターをエクスポート（必要に応じてリセット可能）
+export { toolLimiter };

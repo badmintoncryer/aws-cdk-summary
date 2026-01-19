@@ -20,6 +20,7 @@ https://d2t5fomzexey4a.cloudfront.net/
 - **AIサマリー生成**: Bedrock Agentがカテゴリ分類・要約を自動生成
 - **レポート閲覧**: Next.jsベースのWebフロントエンドでレポートを表示
 - **日付切り替え**: 過去のレポートを日付で選択して閲覧可能
+- **無限ループ防止**: ツール使用回数制限により、エージェントの無限ループを防止
 
 ## プロジェクト構成
 
@@ -88,6 +89,30 @@ pnpm dev
 ```bash
 cd mastra
 pnpm dev
+```
+
+## 設定
+
+### ツール使用回数制限
+
+エージェントの無限ループを防ぐため、ツール使用回数に制限を設けています。
+
+- **デフォルト値**: 50回
+- **環境変数**: `MAX_TOOL_CALLS`
+- **設定場所**: `cdk/lib/cdk-stack.ts` の `runtimeEnvironmentVariables`
+
+制限に達すると、エージェントは以下のエラーメッセージを返して処理を中断します：
+```
+ツール使用回数が制限（50回）を超えました。無限ループの可能性があるため処理を中断します。
+```
+
+制限値を変更するには、CDKスタックの環境変数を更新してください：
+
+```typescript
+runtimeEnvironmentVariables: {
+  REPORT_BUCKET_NAME: reportBucket.bucketName,
+  MAX_TOOL_CALLS: "100", // お好みの値に変更
+}
 ```
 
 ## 出力
