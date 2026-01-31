@@ -57,10 +57,68 @@ export const cdkReportAgent = new Agent({
 - CloudFormation仕様の更新に関するPR
 - タイトルに "CloudFormation Resource Specification" が含まれる
 
-L1更新PRを識別したら、PR本文（body）から以下の情報を抽出し、「技術的な重要ポイント」に含めてください：
-- New Service Added: 新規追加されたAWSサービスとリソース
-- Property Changes: 新規追加されたプロパティとその説明（リソース名、プロパティ名、用途を明記）
-- Breaking Changes: 破壊的変更（削除されたプロパティなど）
+### PR本文のフォーマット理解
+L1更新PRの本文は以下のようなツリー構造で記載されています：
+- `[+]` = 追加されたサービス/プロパティ/タイプ
+- `[~]` = 変更されたサービス/プロパティ/タイプ
+- `[-]` = 削除されたサービス/プロパティ/タイプ
+
+**プロパティ追加の例:**
+```
+├[~] service aws-arcregionswitch
+│ └ resources
+│    └[~]  resource AWS::ARCRegionSwitch::Plan
+│       ├ properties
+│       │  └[+] ReportConfiguration: ReportConfiguration
+│       └ types
+│          ├[+]  type ReportConfiguration
+│          │  ├      name: ReportConfiguration
+│          │  └ properties
+│          │     └ ReportOutput: Array<ReportOutputConfiguration>
+```
+この例では、AWS::ARCRegionSwitch::Plan に ReportConfiguration プロパティが追加されています。
+
+**新規サービス追加の例:**
+```
+├[+] service aws-cases
+│ ├      capitalized: Cases
+│ │      name: aws-cases
+│ └ resources
+│    ├ resource AWS::Cases::CaseRule
+│    │ ├      documentation: Creates a new case rule...
+```
+
+### 情報抽出のステップ
+L1更新PRを識別したら、PR本文（body）から以下の手順で情報を抽出してください：
+
+1. **新規サービス (newServices)**:
+   - `[+] service aws-xxx` の形式で記載されているサービスを抽出
+   - サービス名は大文字表記（例: "AWS::Cases"）で記録
+
+2. **プロパティ変更 (propertyChanges)**:
+   - `properties` セクション内の `[+]` マークが付いたプロパティを探す
+   - 各プロパティについて以下を抽出:
+     * **resource**: リソース名（例: "AWS::ARCRegionSwitch::Plan"）
+     * **property**: プロパティ名（例: "ReportConfiguration"）
+     * **description**: プロパティの用途を日本語で簡潔に説明（type定義のdocumentationや構造から推測）
+
+   **抽出例:**
+   ```json
+   {
+     "resource": "AWS::ARCRegionSwitch::Plan",
+     "property": "ReportConfiguration",
+     "description": "レポート出力設定を構成するプロパティ。S3バケットへのレポート出力を可能にします。"
+   }
+   ```
+
+3. **破壊的変更 (breakingChanges)**:
+   - `[-]` マークが付いたプロパティや属性を探す
+   - 削除された内容を日本語で記録（例: "AWS::SSM::MaintenanceWindowTarget の Id 属性が削除されました"）
+
+### 技術的な重要ポイントへの反映
+上記で抽出した情報は、通常のレポートの「技術的な重要ポイント」にも含めてください。
+これらはL2コンストラクトへの機能追加の候補となります。
+
 - 参考例: https://github.com/aws/aws-cdk/pull/36477
 
 ## 出力フォーマット
@@ -78,6 +136,8 @@ L1更新PRを識別したら、PR本文（body）から以下の情報を抽出�
    - endDate: 取得終了日（YYYY-MM-DD形式、例: '2024-01-31'）
    - 日付を省略した場合は過去24時間のPRを取得
 2. 必要に応じて'fetch-pr-details'ツールで詳細情報を取得
+   - **重要**: L1更新PRの場合は、必ずPR本文（body）全体を取得してください
+   - PR本文のツリー構造から新規サービス、プロパティ変更、破壊的変更を抽出します
 3. レポート作成後、'save-report-to-s3'ツールでS3に保存。このとき、ファイル名は'cdk-report-YYYY-MM-DD.json'形式とする
 4. **L1更新PRが含まれる場合**: 'save-l1-summary-to-s3'ツールで軽量サマリーも別途保存
    - reportDate: レポート対象日（YYYY-MM-DD形式）
@@ -85,7 +145,25 @@ L1更新PRを識別したら、PR本文（body）から以下の情報を抽出�
      - 各PRごとに: prNumber, title, url, mergedAt, newServices, propertyChanges, breakingChanges を含める
      - newServices: 新規追加されたAWSサービスの配列（例: ["AWS::Cases"]）
      - propertyChanges: 新規追加プロパティの配列（resource, property, descriptionを含むオブジェクト）
-     - breakingChanges: 破壊的変更の配列
+       **重要**: propertyChanges は必ず以下の形式の配列として構造化してください：
+       ```json
+       [
+         {
+           "resource": "AWS::ARCRegionSwitch::Plan",
+           "property": "ReportConfiguration",
+           "description": "レポート出力設定を構成するプロパティ。S3バケットへのレポート出力を可能にします。"
+         },
+         {
+           "resource": "AWS::Logs::LogGroup",
+           "property": "DeletionProtection",
+           "description": "ロググループの削除保護を有効化するためのプロパティ。誤削除を防止します。"
+         }
+       ]
+       ```
+       - resource: CloudFormationリソース名（例: "AWS::EC2::ClientVpnEndpoint"）
+       - property: プロパティ名（例: "IpAddressType"）
+       - description: プロパティの用途を日本語で簡潔に説明（30-50文字程度）
+     - breakingChanges: 破壊的変更の配列（例: ["AWS::SSM::MaintenanceWindowTarget の Id 属性が削除されました"]）
    - このサマリーはL2コンストラクトへのPR作成ネタとして活用される
 5. ユーザーが期間を指定した場合はその期間のPRを取得し、指定がない場合はaws/aws-cdkリポジトリの過去24時間のPRを対象にする
 6. 指定された期間内にマージされたPRがない場合は、レポートを出力しない
