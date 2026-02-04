@@ -52,20 +52,23 @@ export class ToolCallLimiter {
  * @param limiter ToolCallLimiterインスタンス
  * @returns 制限付きツール
  */
-export function wrapToolWithLimiter<T extends { id: string; execute: Function }>(
+export function wrapToolWithLimiter<T extends { id: string; execute?: (...args: any[]) => any }>(
   tool: T,
   limiter: ToolCallLimiter
 ): T {
   const originalExecute = tool.execute;
+  if (!originalExecute) {
+    return tool;
+  }
 
   return {
     ...tool,
-    execute: async (params: any) => {
+    execute: async (...args: any[]) => {
       // 制限をチェック
       limiter.checkLimit(tool.id);
 
       // 元のツールを実行
-      return await originalExecute(params);
+      return await originalExecute(...args);
     },
   } as T;
 }
