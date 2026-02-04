@@ -14,30 +14,41 @@ export async function GET(request: Request) {
 
   try {
     if (date) {
-      // Get specific L1 update summary by date
-      const getCommand = new GetObjectCommand({
+      // List objects to find the matching file regardless of naming pattern
+      const listCommand = new ListObjectsV2Command({
         Bucket: BUCKET_NAME,
-        Key: `reports/l1-updates/l1-${date}.json`,
+        Prefix: "reports/l1-updates/",
       });
 
-      try {
-        const getResponse = await s3Client.send(getCommand);
-        const body = await getResponse.Body?.transformToString();
+      const listResponse = await s3Client.send(listCommand);
+      const datePattern = new RegExp(`l1-(?:summary-)?${date}\\.json$`);
+      const matchingKey = (listResponse.Contents || []).find(
+        (obj) => obj.Key && datePattern.test(obj.Key)
+      )?.Key;
 
-        if (!body) {
-          return NextResponse.json(
-            { error: "Failed to read L1 update summary" },
-            { status: 500 }
-          );
-        }
-
-        return NextResponse.json(JSON.parse(body));
-      } catch {
+      if (!matchingKey) {
         return NextResponse.json(
           { error: "L1 update summary not found" },
           { status: 404 }
         );
       }
+
+      const getCommand = new GetObjectCommand({
+        Bucket: BUCKET_NAME,
+        Key: matchingKey,
+      });
+
+      const getResponse = await s3Client.send(getCommand);
+      const body = await getResponse.Body?.transformToString();
+
+      if (!body) {
+        return NextResponse.json(
+          { error: "Failed to read L1 update summary" },
+          { status: 500 }
+        );
+      }
+
+      return NextResponse.json(JSON.parse(body));
     }
 
     // List all available L1 update summaries
@@ -52,7 +63,7 @@ export async function GET(request: Request) {
 
     for (const obj of response.Contents || []) {
       if (obj.Key && obj.Key.endsWith(".json")) {
-        const match = obj.Key.match(/l1-(\d{4}-\d{2}-\d{2})\.json$/);
+        const match = obj.Key.match(/l1-(?:summary-)?(\d{4}-\d{2}-\d{2})\.json$/);
         if (match) {
           summaries.push({
             date: match[1],
