@@ -59,12 +59,12 @@ export const cdkReportAgent = new Agent({
 
 ### PR本文のフォーマット理解
 L1更新PRの本文は以下のようなツリー構造で記載されています：
-- `[+]` = 追加されたサービス/プロパティ/タイプ
-- `[~]` = 変更されたサービス/プロパティ/タイプ
-- `[-]` = 削除されたサービス/プロパティ/タイプ
+- \`[+]\` = 追加されたサービス/プロパティ/タイプ
+- \`[~]\` = 変更されたサービス/プロパティ/タイプ
+- \`[-]\` = 削除されたサービス/プロパティ/タイプ
 
 **プロパティ追加の例:**
-```
+\`\`\`
 ├[~] service aws-arcregionswitch
 │ └ resources
 │    └[~]  resource AWS::ARCRegionSwitch::Plan
@@ -75,44 +75,44 @@ L1更新PRの本文は以下のようなツリー構造で記載されていま�
 │          │  ├      name: ReportConfiguration
 │          │  └ properties
 │          │     └ ReportOutput: Array<ReportOutputConfiguration>
-```
+\`\`\`
 この例では、AWS::ARCRegionSwitch::Plan に ReportConfiguration プロパティが追加されています。
 
 **新規サービス追加の例:**
-```
+\`\`\`
 ├[+] service aws-cases
 │ ├      capitalized: Cases
 │ │      name: aws-cases
 │ └ resources
 │    ├ resource AWS::Cases::CaseRule
 │    │ ├      documentation: Creates a new case rule...
-```
+\`\`\`
 
 ### 情報抽出のステップ
 L1更新PRを識別したら、PR本文（body）から以下の手順で情報を抽出してください：
 
 1. **新規サービス (newServices)**:
-   - `[+] service aws-xxx` の形式で記載されているサービスを抽出
+   - \`[+] service aws-xxx\` の形式で記載されているサービスを抽出
    - サービス名は大文字表記（例: "AWS::Cases"）で記録
 
 2. **プロパティ変更 (propertyChanges)**:
-   - `properties` セクション内の `[+]` マークが付いたプロパティを探す
+   - \`properties\` セクション内の \`[+]\` マークが付いたプロパティを探す
    - 各プロパティについて以下を抽出:
      * **resource**: リソース名（例: "AWS::ARCRegionSwitch::Plan"）
      * **property**: プロパティ名（例: "ReportConfiguration"）
      * **description**: プロパティの用途を日本語で簡潔に説明（type定義のdocumentationや構造から推測）
 
    **抽出例:**
-   ```json
+   \`\`\`json
    {
      "resource": "AWS::ARCRegionSwitch::Plan",
      "property": "ReportConfiguration",
      "description": "レポート出力設定を構成するプロパティ。S3バケットへのレポート出力を可能にします。"
    }
-   ```
+   \`\`\`
 
 3. **破壊的変更 (breakingChanges)**:
-   - `[-]` マークが付いたプロパティや属性を探す
+   - \`[-]\` マークが付いたプロパティや属性を探す
    - 削除された内容を日本語で記録（例: "AWS::SSM::MaintenanceWindowTarget の Id 属性が削除されました"）
 
 ### 技術的な重要ポイントへの反映
@@ -146,7 +146,7 @@ L1更新PRを識別したら、PR本文（body）から以下の手順で情報�
      - newServices: 新規追加されたAWSサービスの配列（例: ["AWS::Cases"]）
      - propertyChanges: 新規追加プロパティの配列（resource, property, descriptionを含むオブジェクト）
        **重要**: propertyChanges は必ず以下の形式の配列として構造化してください：
-       ```json
+       \`\`\`json
        [
          {
            "resource": "AWS::ARCRegionSwitch::Plan",
@@ -159,7 +159,7 @@ L1更新PRを識別したら、PR本文（body）から以下の手順で情報�
            "description": "ロググループの削除保護を有効化するためのプロパティ。誤削除を防止します。"
          }
        ]
-       ```
+       \`\`\`
        - resource: CloudFormationリソース名（例: "AWS::EC2::ClientVpnEndpoint"）
        - property: プロパティ名（例: "IpAddressType"）
        - description: プロパティの用途を日本語で簡潔に説明（30-50文字程度）
