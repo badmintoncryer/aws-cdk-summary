@@ -49,7 +49,7 @@ async function getL1SummaryList(): Promise<SummaryFile[]> {
 
   for (const obj of response.Contents || []) {
     if (obj.Key && obj.Key.endsWith(".json")) {
-      const match = obj.Key.match(/l1-(\d{4}-\d{2}-\d{2})\.json$/);
+      const match = obj.Key.match(/l1-(?:summary-)?(\d{4}-\d{2}-\d{2})\.json$/);
       if (match) {
         files.push({
           key: obj.Key,
