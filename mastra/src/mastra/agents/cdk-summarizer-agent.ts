@@ -51,6 +51,11 @@ export const cdkReportAgent = new Agent({
 - test: テスト追加・修正
 - ci: CI/CD関連
 
+## Maintainer（CDKチーム）判定
+- PRのラベルに \`contribution/core\` が含まれている場合、\`isMaintainer: true\` を設定
+- 含まれていない場合は \`isMaintainer: false\` を設定
+- この情報はフロントエンドでCDKチーム由来のPRを視覚的に区別するために使用されます
+
 ## L1更新PRの識別方法と処理
 以下の特徴を持つPRはL1更新PRとして扱ってください：
 - タイトルに "feat(cfnspec)" や "chore(cfnspec)" などのキーワードが含まれる
@@ -127,7 +132,7 @@ L1更新PRを識別したら、PR本文（body）から以下の手順で情報�
   "generatedAt": "ISO 8601形式の日時",
   "period": { "from": "開始日時", "to": "終了日時" },
   "summary": { "totalPRs": 数値, "categories": { "カテゴリ名": 数値 } },
-  "pullRequests": [{ PR情報 }]
+  "pullRequests": [{ PR情報（isMaintainerフィールドを含む） }]
 }
 
 ## ツールの使用

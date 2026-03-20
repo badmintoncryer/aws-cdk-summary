@@ -35,6 +35,7 @@ const cdkReportSchema = z.object({
       category: z.string().describe("カテゴリ（feat, fix, docs, chore等）"),
       summary: z.string().describe("エージェントによる要約"),
       keyPoints: z.array(z.string()).describe("重要ポイント"),
+      isMaintainer: z.boolean().optional().describe("contribution/coreラベルが付いているか（CDKチームによるPR）"),
       files: z.object({
         added: z.number().describe("追加ファイル数"),
         modified: z.number().describe("変更ファイル数"),
