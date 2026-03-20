@@ -18,6 +18,7 @@ interface PullRequest {
   category: string;
   summary: string;
   keyPoints: string[];
+  isMaintainer?: boolean;
   files: {
     added: number;
     modified: number;
@@ -264,6 +265,7 @@ export default async function Home({
               <div className="space-y-4">
                 {selectedReport.pullRequests.map((pr) => {
                   const style = getCategoryStyle(pr.category);
+                  const isMaintainer = pr.isMaintainer ?? pr.labels?.includes('contribution/core');
                   return (
                     <article
                       key={pr.number}
@@ -282,12 +284,19 @@ export default async function Home({
                           <span className="text-gray-400 dark:text-gray-500 font-normal">#{pr.number}</span>{" "}
                           {pr.title}
                         </a>
-                        <span
-                          className={`${style.bg} ${style.darkBg} ${style.text} ${style.darkText} px-3 py-1 rounded-full
-                                      text-xs font-semibold whitespace-nowrap`}
-                        >
-                          {pr.category}
-                        </span>
+                        <div className="flex items-center gap-2 flex-shrink-0">
+                          {isMaintainer && (
+                            <span className="bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 px-2 py-1 rounded-full text-xs font-semibold whitespace-nowrap">
+                              CDK Team
+                            </span>
+                          )}
+                          <span
+                            className={`${style.bg} ${style.darkBg} ${style.text} ${style.darkText} px-3 py-1 rounded-full
+                                        text-xs font-semibold whitespace-nowrap`}
+                          >
+                            {pr.category}
+                          </span>
+                        </div>
                       </div>
 
                       {/* PR Meta */}
