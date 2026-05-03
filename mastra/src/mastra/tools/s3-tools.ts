@@ -65,12 +65,12 @@ const l1UpdateSummarySchema = z.object({
         .array(
           z.object({
             resource: z.string().describe("リソース名（例: AWS::EC2::ClientVpnEndpoint）"),
-            property: z.string().describe("プロパティ名"),
+            property: z.string().describe("プロパティ名（attributes ではなく properties セクションのもの）"),
             description: z.string().describe("プロパティの説明"),
           })
         )
         .optional()
-        .describe("新規追加されたプロパティ"),
+        .describe("新規追加された CloudFormation プロパティ（properties セクション直下の [+] のみ。attributes / types セクションの追加は含めないこと）"),
       breakingChanges: z
         .array(z.string())
         .optional()
