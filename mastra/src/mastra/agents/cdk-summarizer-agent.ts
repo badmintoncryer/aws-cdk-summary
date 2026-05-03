@@ -101,7 +101,21 @@ L1更新PRを識別したら、PR本文（body）から以下の手順で情報�
    - サービス名は大文字表記（例: "AWS::Cases"）で記録
 
 2. **プロパティ変更 (propertyChanges)**:
-   - \`properties\` セクション内の \`[+]\` マークが付いたプロパティを探す
+   - **必ず \`properties\` セクション直下の \`[+]\` のみを対象とする**。リソース直下の \`properties\` ツリーノード配下にあるエントリだけが対象。
+   - **以下は propertyChanges に絶対に含めないこと**:
+     * \`attributes\` セクション内の \`[+]\` 追加（CloudFormation の Attribute であり、Property ではない）
+     * \`types\` セクション内の \`[+]\` 追加（型定義の追加であり、リソースのプロパティ追加ではない）
+   - **悪い例（propertyChanges に含めてはいけない）:**
+     \`\`\`
+     ├[~] resource AWS::SSM::MaintenanceWindowTarget
+     │  └ attributes
+     │     └[+] Id: String          ← これは attribute。propertyChanges に入れない
+     \`\`\`
+     \`\`\`
+     │  └ types
+     │     └[+] type ReportConfiguration   ← これは type 定義。propertyChanges に入れない
+     \`\`\`
+   - **良い例（propertyChanges に含める）:** \`properties\` セクション直下にある \`[+] PropName: Type\` のみ。
    - 各プロパティについて以下を抽出:
      * **resource**: リソース名（例: "AWS::ARCRegionSwitch::Plan"）
      * **property**: プロパティ名（例: "ReportConfiguration"）
@@ -150,6 +164,7 @@ L1更新PRを識別したら、PR本文（body）から以下の手順で情報�
      - 各PRごとに: prNumber, title, url, mergedAt, newServices, propertyChanges, breakingChanges を含める
      - newServices: 新規追加されたAWSサービスの配列（例: ["AWS::Cases"]）
      - propertyChanges: 新規追加プロパティの配列（resource, property, descriptionを含むオブジェクト）
+       **重要**: \`attributes\` セクションや \`types\` セクションの \`[+]\` 追加は propertyChanges に **含めない**。含めるのは \`properties\` セクション直下の \`[+]\` のみ。
        **重要**: propertyChanges は必ず以下の形式の配列として構造化してください：
        \`\`\`json
        [
