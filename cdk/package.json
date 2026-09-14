@@ -25,5 +25,11 @@
     "aws-cdk-lib": "2.233.0",
     "constructs": "^10.4.4"
   },
-  "packageManager": "pnpm@9.14.4+sha512.c8180b3fbe4e4bca02c94234717896b5529740a6cbadf19fa78254270403ea2f27d4e1d46a08a0f56c89b63dc8ebfd3ee53326da720273794e6200fcf0d184ab"
+  "packageManager": "pnpm@9.14.4+sha512.c8180b3fbe4e4bca02c94234717896b5529740a6cbadf19fa78254270403ea2f27d4e1d46a08a0f56c89b63dc8ebfd3ee53326da720273794e6200fcf0d184ab",
+  "pnpm": {
+    "overrides": {
+      "fast-xml-parser": "^5.3.5",
+      "handlebars": "^4.7.9"
+    }
+  }
 }
