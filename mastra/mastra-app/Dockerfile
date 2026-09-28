@@ -1,8 +1,8 @@
 FROM --platform=linux/arm64 node:22-slim
 
 WORKDIR /app
-COPY package*.json ./
-RUN npm install -g pnpm && pnpm install
+COPY package.json pnpm-lock.yaml ./
+RUN npm install -g pnpm@9.14.4 && pnpm install --frozen-lockfile
 COPY src ./src
 COPY mastra-app ./mastra-app
 RUN npx mastra build
