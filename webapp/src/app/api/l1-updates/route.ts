@@ -11,8 +11,30 @@ const BUCKET_NAME = process.env.REPORT_BUCKET_NAME || "";
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const date = searchParams.get("date");
+  const pr = searchParams.get("pr");
 
   try {
+    // L1更新PRの全差分テキスト（キーは PR 番号から組み立て、任意のキーは受け付けない）。
+    // キーの形式は書き込み側の mastra/src/mastra/lib/l1-updates.ts と揃える
+    if (pr) {
+      if (!/^\d+$/.test(pr)) {
+        return NextResponse.json({ error: "Invalid PR number" }, { status: 400 });
+      }
+      try {
+        const response = await s3Client.send(
+          new GetObjectCommand({ Bucket: BUCKET_NAME, Key: `reports/l1-diffs/pr-${pr}.txt` })
+        );
+        return new Response(await response.Body?.transformToString(), {
+          headers: { "Content-Type": "text/plain; charset=utf-8" },
+        });
+      } catch (error) {
+        if (error instanceof Error && error.name === "NoSuchKey") {
+          return NextResponse.json({ error: "Full diff not found" }, { status: 404 });
+        }
+        throw error;
+      }
+    }
+
     if (date) {
       // List objects to find the matching file regardless of naming pattern
       const listCommand = new ListObjectsV2Command({

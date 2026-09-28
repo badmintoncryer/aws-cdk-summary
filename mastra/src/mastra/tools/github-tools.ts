@@ -7,7 +7,7 @@ import { Octokit } from "@octokit/rest";
  * GitHub APIトークンは環境変数GITHUB_TOKENから取得（オプション）
  * トークンがない場合は公開APIの制限内で動作
  */
-const octokit = new Octokit({
+export const octokit = new Octokit({
   auth: process.env.GITHUB_TOKEN,
 });
 
