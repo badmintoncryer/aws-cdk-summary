@@ -13,20 +13,43 @@ interface PropertyChange {
   description: string;
 }
 
+interface TypePropertyChange extends PropertyChange {
+  type: string;
+}
+
+// 形の持ち主は mastra/src/mastra/lib/l1-updates.ts の L1Update。
+// 移行前に LLM が作った過去の JSON も読むため、後から足した項目は任意にしている
 interface L1Update {
   prNumber: number;
   title: string;
   url: string;
   mergedAt: string;
+  oldVersion?: string;
+  newVersion?: string;
   newServices?: string[];
+  newResources?: { resource: string; description: string }[];
   propertyChanges?: PropertyChange[];
+  typePropertyChanges?: TypePropertyChange[];
   breakingChanges?: string[];
+  fullDiffKey?: string;
+  error?: string;
 }
 
 interface L1UpdateSummary {
   generatedAt: string;
   reportDate: string;
   l1Updates: L1Update[];
+  error?: string;
+}
+
+const COLLAPSE_THRESHOLD = 10;
+
+function groupByResource(changes: TypePropertyChange[]) {
+  const groups = new Map<string, TypePropertyChange[]>();
+  for (const change of changes) {
+    groups.set(change.resource, [...(groups.get(change.resource) ?? []), change]);
+  }
+  return [...groups];
 }
 
 interface SummaryFile {
@@ -155,8 +178,14 @@ export default async function L1UpdatesPage({
       </header>
 
       <main className="max-w-6xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
-        {selectedSummary && selectedSummary.l1Updates.length > 0 ? (
+        {selectedSummary && (selectedSummary.l1Updates.length > 0 || selectedSummary.error) ? (
           <>
+            {selectedSummary.error && (
+              <div className="mb-6 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4 text-sm text-red-700 dark:text-red-300 break-words">
+                ⚠️ {selectedSummary.error}
+              </div>
+            )}
+
             {/* Summary */}
             <section className="mb-10">
               <div className="bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl p-6 text-white shadow-lg">
@@ -200,6 +229,33 @@ export default async function L1UpdatesPage({
                       </span>
                     </div>
 
+                    {(update.oldVersion || update.fullDiffKey) && (
+                      <div className="flex flex-wrap items-center gap-3 mb-4 text-xs text-gray-500 dark:text-gray-400">
+                        {update.oldVersion && (
+                          <span className="font-mono">
+                            aws-service-spec {update.oldVersion} → {update.newVersion}
+                          </span>
+                        )}
+                        {/* fullDiffKey は有無だけを見る（S3 のキーは route 側で PR 番号から組み立てる） */}
+                        {update.fullDiffKey && (
+                          <a
+                            href={`/api/l1-updates?pr=${update.prNumber}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-blue-600 dark:text-blue-400 hover:underline"
+                          >
+                            全差分を見る →
+                          </a>
+                        )}
+                      </div>
+                    )}
+
+                    {update.error && (
+                      <div className="mb-4 bg-red-50 dark:bg-red-900/20 rounded-lg p-3 text-sm text-red-700 dark:text-red-300 break-words">
+                        ⚠️ {update.error}
+                      </div>
+                    )}
+
                     {/* New Services */}
                     {update.newServices && update.newServices.length > 0 && (
                       <div className="mb-4">
@@ -218,6 +274,27 @@ export default async function L1UpdatesPage({
                           ))}
                         </div>
                       </div>
+                    )}
+
+                    {/* New Resources */}
+                    {update.newResources && update.newResources.length > 0 && (
+                      <details className="mb-4" open={update.newResources.length <= COLLAPSE_THRESHOLD}>
+                        <summary className="text-sm font-semibold text-emerald-700 dark:text-emerald-400 mb-2 cursor-pointer">
+                          🧩 New Resources Added ({update.newResources.length})
+                        </summary>
+                        <div className="space-y-2">
+                          {update.newResources.map((r, i) => (
+                            <div key={i} className="bg-emerald-50 dark:bg-emerald-900/20 rounded-lg p-3 overflow-hidden">
+                              <div className="font-mono text-sm text-emerald-900 dark:text-emerald-300 font-semibold break-all">
+                                {r.resource}
+                              </div>
+                              <div className="text-sm text-gray-600 dark:text-gray-300 mt-2 break-words">
+                                {r.description}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </details>
                     )}
 
                     {/* Property Changes */}
@@ -247,6 +324,34 @@ export default async function L1UpdatesPage({
                           </div>
                         </div>
                       )}
+
+                    {/* Type Property Changes */}
+                    {update.typePropertyChanges && update.typePropertyChanges.length > 0 && (
+                      <details className="mb-4" open={update.typePropertyChanges.length <= COLLAPSE_THRESHOLD}>
+                        <summary className="text-sm font-semibold text-indigo-700 dark:text-indigo-400 mb-2 cursor-pointer">
+                          🔧 New Properties in Types ({update.typePropertyChanges.length})
+                        </summary>
+                        <div className="space-y-2">
+                          {groupByResource(update.typePropertyChanges).map(([resource, changes]) => (
+                            <div key={resource} className="bg-indigo-50 dark:bg-indigo-900/20 rounded-lg p-3 overflow-hidden">
+                              <div className="font-mono text-sm text-indigo-900 dark:text-indigo-300 font-semibold break-all">
+                                {resource}
+                              </div>
+                              {changes.map((change, i) => (
+                                <div key={i} className="mt-2">
+                                  <div className="font-mono text-xs text-indigo-700 dark:text-indigo-400 break-all">
+                                    {change.type}.{change.property}
+                                  </div>
+                                  <div className="text-sm text-gray-600 dark:text-gray-300 mt-1 break-words">
+                                    {change.description}
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          ))}
+                        </div>
+                      </details>
+                    )}
 
                     {/* Breaking Changes */}
                     {update.breakingChanges &&

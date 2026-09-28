@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "node --import tsx --test test/*.test.ts",
     "dev": "mastra dev",
     "build": "mastra build",
     "start": "mastra start",
@@ -19,6 +19,8 @@
   },
   "dependencies": {
     "@ai-sdk/amazon-bedrock": "^3.0.54",
+    "@aws-cdk/service-spec-importers": "0.0.140",
+    "@aws-cdk/service-spec-types": "0.0.278",
     "@aws-sdk/client-s3": "^3.958.0",
     "@aws-sdk/credential-providers": "^3.932.0",
     "@mastra/core": "^0.24.1",

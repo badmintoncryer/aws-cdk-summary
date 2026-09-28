@@ -1,6 +1,7 @@
 import express, { Request, Response } from 'express';
 import { mastra } from "../src/mastra"
 import { toolLimiter } from "../src/mastra/agents/cdk-summarizer-agent";
+import { L1_SUMMARY_HEADING, saveL1Summary } from "../src/mastra/lib/l1-updates";
 
 const app = express();
 const port = 8080;
@@ -37,12 +38,33 @@ app.post('/invocations', async (req: Request, res: Response) => {
 
         console.log("Processing input:", inputText);
 
+        // L1更新の対象期間（仕様は docs/l1-spec-diff-design.md）。
+        // 定期実行の起動が数秒遅れても、日ごとの期間が重なったり空いたりしないよう毎時0分で区切る
+        const payload = !Buffer.isBuffer(req.body) && typeof req.body === 'object' ? req.body : {};
+        const hour = 60 * 60 * 1000;
+        const to = payload.endDate ? parseDate(payload.endDate, true) : new Date(Math.floor(Date.now() / hour) * hour);
+        const from = payload.startDate ? parseDate(payload.startDate, false) : new Date(to.getTime() - 24 * hour);
+        if (Number.isNaN(from.getTime()) || Number.isNaN(to.getTime())) {
+            return res.status(400).set('Content-Type', 'application/octet-stream').send(Buffer.from("Invalid startDate or endDate", 'utf-8'));
+        }
+        // ファイル名の日付は、エージェントの検索の終了日（endDate、なければ実行時の UTC の日付）と同じにする
+        const reportDate = (payload.endDate ? new Date(payload.endDate) : to).toISOString().slice(0, 10);
+
+        // L1更新の差分はコードで抽出・保存し、エージェントには要約だけを渡す
+        let l1PromptText = "";
+        try {
+            l1PromptText = await saveL1Summary(from, to, reportDate);
+        } catch (error) {
+            console.error("Failed to save L1 update summary:", error);
+        }
+        const prompt = l1PromptText ? `${inputText}\n\n${L1_SUMMARY_HEADING}\n${l1PromptText}` : inputText;
+
         // ツール使用回数カウンターをリセット（新しいリクエストごとにカウントをリセット）
         toolLimiter.reset();
 
         // Mastraエージェントを実行
         const agent = mastra.getAgent("cdkReportAgent");
-        const result = await agent.generate(inputText);
+        const result = await agent.generate(prompt);
 
         console.log("Agent response:", result.text);
         console.log(`Total tool calls in this request: ${toolLimiter.getCallCount()}`);
@@ -59,6 +81,12 @@ app.post('/invocations', async (req: Request, res: Response) => {
         res.status(500).set('Content-Type', 'application/octet-stream').send(errorBuffer);
     }
 });
+
+// 日付だけ（YYYY-MM-DD）の終了日は、エージェントの検索と同じくその日を含める
+function parseDate(value: string, isEnd: boolean) {
+    const date = new Date(value);
+    return isEnd && /^\d{4}-\d{2}-\d{2}$/.test(value) ? new Date(date.getTime() + 24 * 60 * 60 * 1000) : date;
+}
 
 app.get('/ping', (_req: Request, res: Response) => {
     return res.json({ status: "healthy" });
