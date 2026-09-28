@@ -153,7 +153,12 @@ export function extractChanges(
   return changes;
 }
 
-/** 旧版で受け付けていた型が新版で受け付けられない、または任意から必須になった場合を破壊的変更とする */
+const REPLACEMENT_RISK = { no: 0, maybe: 1, yes: 2 } as const;
+
+/**
+ * 次のどれかに当たる場合を破壊的変更とする:
+ * 旧版で受け付けていた型が新版で受け付けられない、任意から必須になった、変更でリソースが置き換わりやすくなった
+ */
 function propertyBreaks(
   label: string,
   { old, new: next }: UpdatedProperty,
@@ -168,6 +173,11 @@ function propertyBreaks(
   }
   if (!old.required && next.required) {
     messages.push(`${label}が必須になりました`);
+  }
+  const nextReplacement = next.causesReplacement ?? "no";
+  if (REPLACEMENT_RISK[nextReplacement] > REPLACEMENT_RISK[old.causesReplacement ?? "no"]) {
+    const effect = nextReplacement === "yes" ? "置き換わる" : "置き換わる場合がある";
+    messages.push(`${label}を変更すると、リソースが${effect}ようになりました`);
   }
   return messages;
 }

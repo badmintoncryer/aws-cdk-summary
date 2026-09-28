@@ -36,6 +36,7 @@ aws/aws-cdk の L1 更新PR（`feat: update L1 CloudFormation resource definitio
 - `primaryIdentifier` の変更
 - 型の変更: 旧版で受け付けていた型が新版で受け付けられなくなったもの（判定方法は `l1-spec-diff.ts` の `acceptedTypes`）
 - 任意から必須への変更
+- 置き換えの発生: 変更するとリソースが置き換わる（または置き換わる場合がある）ようになったもの。置き換えが起きなくなった方向は対象外
 
 ## 失敗したとき
 
