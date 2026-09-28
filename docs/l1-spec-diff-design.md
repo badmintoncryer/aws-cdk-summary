@@ -58,4 +58,4 @@ AgentCore Runtime に次の JSON を渡す。`startDate` と `endDate` は ISO 8
 
 `@aws-cdk/service-spec-importers` と `@aws-cdk/service-spec-types` は版を固定している。新しいスペックDBが読めなくなったら、画面にエラーが出るので手動で版を上げる。
 
-版を上げたら `pnpm test` を実行し、`l1-spec-diff.ts` が非公開パス（`lib/diff-fmt.js`）から読んでいる `DiffFormatter` が残っているか確かめる。
+`l1-spec-diff.ts` は `DbDiff` と `DiffFormatter` を、パッケージのルートではなく `lib/db-diff.js` と `lib/diff-fmt.js` から直接読んでいる。ルートから読むと、使わないデータ取り込み機能が依存する `glob` まで読み込まれ、`mastra build` が失敗するため。版を上げたら `pnpm test` と `pnpm build` を実行し、この 2 つのパスが残っているか確かめる。

@@ -5,8 +5,9 @@ import { mkdtemp, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { promisify } from "node:util";
-import { DbDiff } from "@aws-cdk/service-spec-importers";
-// DiffFormatter はパッケージのルートから export されていないので lib から直接読む。版を上げたらこのパスが残っているか確かめる
+// パッケージのルートから読むと、使わないデータ取り込み機能が依存する glob まで読み込まれ、`mastra build` が失敗する。
+// そのため lib のファイルから直接読む（DiffFormatter はルートから export されていない）。版を上げたらこのパスが残っているか確かめる
+import { DbDiff } from "@aws-cdk/service-spec-importers/lib/db-diff.js";
 import { DiffFormatter } from "@aws-cdk/service-spec-importers/lib/diff-fmt.js";
 import {
   loadDatabase,
