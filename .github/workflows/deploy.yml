@@ -6,6 +6,11 @@ on:
       - main
   workflow_dispatch:
 
+# デプロイ中の CloudFormation を中断させないよう、キャンセルせず直列化する
+concurrency:
+  group: deploy
+  cancel-in-progress: false
+
 env:
   AWS_REGION: us-west-2
   NODE_VERSION: '24'
