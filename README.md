@@ -4,7 +4,7 @@ AWS CDK リポジトリのPull Requestを毎日分析し、サマリーレポー
 
 ## URL
 
-https://d2t5fomzexey4a.cloudfront.net/
+https://cdk-daily-summary.appnao.com/
 
 ## アーキテクチャ
 
@@ -120,7 +120,7 @@ runtimeEnvironmentVariables: {
 デプロイ後、以下の情報が出力されます:
 
 - `ReportBucketName`: レポート保存用S3バケット名
-- `FrontendUrl`: フロントエンドのCloudFront URL
+- `FrontendUrl`: フロントエンドの URL（カスタムドメイン）
 
 ## ライセンス
 
