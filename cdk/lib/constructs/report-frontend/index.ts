@@ -3,6 +3,9 @@ import * as lambda from "aws-cdk-lib/aws-lambda";
 import * as cloudfront from "aws-cdk-lib/aws-cloudfront";
 import * as origins from "aws-cdk-lib/aws-cloudfront-origins";
 import * as s3 from "aws-cdk-lib/aws-s3";
+import * as acm from "aws-cdk-lib/aws-certificatemanager";
+import * as route53 from "aws-cdk-lib/aws-route53";
+import * as targets from "aws-cdk-lib/aws-route53-targets";
 import { Construct } from "constructs";
 import * as path from "node:path";
 
@@ -26,6 +29,19 @@ export interface ReportFrontendProps {
    * @default Duration.seconds(30)
    */
   timeout?: cdk.Duration;
+
+  /**
+   * カスタムドメイン設定
+   * 指定すると CloudFront に代替ドメインと証明書を設定し、
+   * Route 53 に A / AAAA エイリアスレコードを作成する
+   * @default - CloudFront のデフォルトドメインのみ
+   */
+  customDomain?: {
+    domainName: string;
+    hostedZoneName: string;
+    /** us-east-1 の ACM 証明書 */
+    certificate: acm.ICertificate;
+  };
 }
 
 /**
@@ -87,6 +103,29 @@ export class ReportFrontend extends Construct {
           cloudfront.OriginRequestPolicy.ALL_VIEWER_EXCEPT_HOST_HEADER,
         allowedMethods: cloudfront.AllowedMethods.ALLOW_ALL,
       },
+      ...(props.customDomain && {
+        domainNames: [props.customDomain.domainName],
+        certificate: props.customDomain.certificate,
+      }),
     });
+
+    if (props.customDomain) {
+      const hostedZone = route53.HostedZone.fromLookup(this, "HostedZone", {
+        domainName: props.customDomain.hostedZoneName,
+      });
+      const target = route53.RecordTarget.fromAlias(
+        new targets.CloudFrontTarget(this.distribution)
+      );
+      new route53.ARecord(this, "AliasRecord", {
+        zone: hostedZone,
+        recordName: props.customDomain.domainName,
+        target,
+      });
+      new route53.AaaaRecord(this, "AliasRecordIpv6", {
+        zone: hostedZone,
+        recordName: props.customDomain.domainName,
+        target,
+      });
+    }
   }
 }

@@ -2,14 +2,30 @@ import * as cdk from "aws-cdk-lib/core";
 import * as s3 from "aws-cdk-lib/aws-s3";
 import * as iam from "aws-cdk-lib/aws-iam";
 import * as scheduler from "aws-cdk-lib/aws-scheduler";
+import * as acm from "aws-cdk-lib/aws-certificatemanager";
 import { Construct } from "constructs";
 import * as path from "node:path";
 import { MastraAgentRuntime } from "./constructs/mastra-agent-runtime";
 import { AgentScheduler } from "./constructs/agent-scheduler";
 import { ReportFrontend } from "./constructs/report-frontend";
 
+export interface CdkSummaryStackProps extends cdk.StackProps {
+  /**
+   * フロントエンドに付けるカスタムドメイン
+   * @default - CloudFront のデフォルトドメインのみ
+   */
+  customDomain?: {
+    /** 例: cdk-daily-summary.appnao.com */
+    domainName: string;
+    /** Route 53 パブリックホストゾーン名。例: appnao.com */
+    hostedZoneName: string;
+    /** us-east-1 で発行した ACM 証明書 */
+    certificate: acm.ICertificate;
+  };
+}
+
 export class CdkSummaryStack extends cdk.Stack {
-  constructor(scope: Construct, id: string, props?: cdk.StackProps) {
+  constructor(scope: Construct, id: string, props?: CdkSummaryStackProps) {
     super(scope, id, props);
 
     // レポート保存用S3バケット（プライベート）
@@ -62,10 +78,14 @@ export class CdkSummaryStack extends cdk.Stack {
     // レポート閲覧フロントエンド
     const frontend = new ReportFrontend(this, "ReportFrontend", {
       reportBucket,
+      customDomain: props?.customDomain,
     });
 
     new cdk.CfnOutput(this, "FrontendUrl", {
-      value: `https://${frontend.distribution.distributionDomainName}`,
+      value: `https://${
+        props?.customDomain?.domainName ??
+        frontend.distribution.distributionDomainName
+      }`,
       description: "CDK Report Frontend URL",
     });
   }
